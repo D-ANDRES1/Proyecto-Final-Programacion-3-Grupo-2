@@ -1,0 +1,78 @@
+# Help file
+HELP.md
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# STS / Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# VS Code
+.vscode/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Compiled class files
+*.class
+
+# Log files
+*.log
+spring.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java
+.mtj.tmp/
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
+
+# Environment variables
+.env
+
+# Local Spring configs
+application-local.properties
+application-secret.properties
+
+# Generated files
+generated/
+
+# Docker
+*.pid
+
+# Database files
+*.db
