@@ -7,5 +7,5 @@
   </parent>
   <artifactId>tree-engine</artifactId>
   <name>tree-engine</name>
-  <description>Implementacion custome de los arboles binarios</description>
+  <description>Implementacion costume de los arboles binarios</description>
 </project>
