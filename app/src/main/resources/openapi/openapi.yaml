@@ -1,0 +1,293 @@
+openapi: 3.0.3
+
+info:
+  title: Tree Engine API
+  version: 1.0.0
+  description: Contract-first API para motor de árboles con estrategias intercambiables
+
+servers:
+  - url: http://localhost:8080
+
+tags:
+  - name: Health
+  - name: Nodes
+  - name: Tree
+
+paths:
+
+  /health:
+    get:
+      tags: [Health]
+      operationId: healthCheck
+      summary: Health check del sistema
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /nodes/root:
+    post:
+      tags: [Nodes]
+      operationId: createRoot
+      summary: Crear nodo raíz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRootRequest'
+      responses:
+        '201':
+          description: Root creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeResponse'
+
+  /nodes/{parentId}/children:
+    post:
+      tags: [Nodes]
+      operationId: addChild
+      summary: Agregar hijo a un nodo
+      parameters:
+        - name: parentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddChildRequest'
+      responses:
+        '201':
+          description: Hijo agregado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeResponse'
+
+  /tree:
+    get:
+      tags: [Tree]
+      operationId: getTree
+      summary: Obtener árbol completo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreeResponse'
+
+  /tree/{nodeId}:
+    get:
+      tags: [Tree]
+      operationId: getSubTree
+      summary: Obtener subárbol
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreeResponse'
+
+  /nodes/{nodeId}/path:
+    get:
+      tags: [Nodes]
+      operationId: getPathToRoot
+      summary: Ruta desde raíz a nodo
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathResponse'
+
+  /tree/traversal:
+    get:
+      tags: [Tree]
+      operationId: traversal
+      summary: Recorrido DFS/BFS
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [DFS, BFS]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+
+  /tree/height:
+    get:
+      tags: [Tree]
+      operationId: getHeight
+      summary: Altura del árbol
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeightResponse'
+
+  /nodes/{nodeId}/depth:
+    get:
+      tags: [Nodes]
+      operationId: getDepth
+      summary: Profundidad de un nodo
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepthResponse'
+
+  /nodes/{nodeId}/ancestors:
+    get:
+      tags: [Nodes]
+      operationId: getAncestors
+      summary: Ancestros de un nodo
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+
+  /tree/validate:
+    get:
+      tags: [Tree]
+      operationId: validateNoCycles
+      summary: Validar que no existan ciclos
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+
+
+components:
+  schemas:
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "UP"
+
+    CreateRootRequest:
+      type: object
+      properties:
+        value:
+          type: string
+      required:
+        - value
+
+    AddChildRequest:
+      type: object
+      properties:
+        value:
+          type: string
+      required:
+        - value
+
+    NodeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        value:
+          type: string
+        parentId:
+          type: string
+
+    TreeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        value:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreeResponse'
+
+    PathResponse:
+      type: object
+      properties:
+        path:
+          type: array
+          items:
+            type: string
+
+    ListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: string
+
+    HeightResponse:
+      type: object
+      properties:
+        height:
+          type: integer
+          format: int32
+
+    DepthResponse:
+      type: object
+      properties:
+        depth:
+          type: integer
+          format: int32
+
+    ValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean

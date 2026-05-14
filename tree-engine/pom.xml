@@ -7,5 +7,9 @@
   </parent>
   <artifactId>tree-engine</artifactId>
   <name>tree-engine</name>
-  <description>Implementacion costume de los arboles binarios</description>
+  <description>Implementacion con collections y costume de los arboles</description>
+  
+  <properties>
+    <java.version>17</java.version>
+</properties>
 </project>
