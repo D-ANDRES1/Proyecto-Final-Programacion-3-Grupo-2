@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import com.grupo2.app.mapper.RequestMapper;
 import com.grupo2.app.mapper.ResponseMapper;
 import com.grupo2.app.model.NodeEntity;
-import com.grupo2.app.persistence.repository.NodeRepository;
+import com.grupo2.app.repository.NodeRepository;
 import com.grupo2.treeengine.core.TreeNode;
 
 @Component
