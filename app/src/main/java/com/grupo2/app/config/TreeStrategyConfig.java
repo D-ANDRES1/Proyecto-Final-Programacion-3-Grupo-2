@@ -2,6 +2,12 @@ package com.grupo2.app.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.grupo2.app.mapper.MongoMapper;
+import com.grupo2.app.persistence.repository.MongoNodeRepository;
+import com.grupo2.app.persistence.strategy.MongoPersistenceStrategy;
+import com.grupo2.app.persistence.strategy.PersistenceStrategy;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 @Configuration
@@ -23,11 +29,12 @@ public class TreeStrategyConfig {
         return "POSTGRES_ACTIVA";
     }
 
-    // Bean para ESTRATEGIA MONGO (Parte C - STUB por ahora)
+    // Bean para ESTRATEGIA MONGO (Parte C)
     @Bean
     @ConditionalOnProperty(name = "app.tree-strategy", havingValue = "mongo")
-    public String estrategiaMongo() {
-        System.out.println(">>> Activando estrategia: MONGODB (stub)");
-        return "MONGO_ACTIVA";
+    public PersistenceStrategy mongoPersistenceStrategy(
+            MongoNodeRepository mongoRepository,
+            MongoMapper mongoMapper) {
+        return new MongoPersistenceStrategy(mongoRepository, mongoMapper);
     }
 }
