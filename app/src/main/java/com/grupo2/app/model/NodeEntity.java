@@ -1,54 +1,53 @@
 package com.grupo2.app.model;
 
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name = "nodes")
 public class NodeEntity {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name = "node_value")
+    @Column(name = "node_value", length = 255, nullable = false)
+    @NotBlank(message = "El valor del nodo no puede estar vacío")
+    @Size(min = 1, max = 64, message = "El valor debe tener entre 1 y 64 caracteres")
     private String value;
 
+    @Column(name = "parent_id", length = 50)
     private String parentId;
 
-    // opcional (solo para navegación en memoria, NO obligatorio en DB)
     @Transient
-    private List<NodeEntity> children = new ArrayList<>();
-    
+    private java.util.List<NodeEntity> children = new java.util.ArrayList<>();
+
+    // Getters y Setters
     public String getId() {
         return id;
     }
 
-	public String getValue() {
-		return value;
-	}
+    public String getValue() {
+        return value;
+    }
 
-	public void setValue(String value) {
-		this.value = value;
-	}
+    public void setValue(String value) {
+        this.value = value;
+    }
 
-	public String getParentId() {
-		return parentId;
-	}
+    public String getParentId() {
+        return parentId;
+    }
 
-	public void setParentId(String parentId) {
-		this.parentId = parentId;
-	}
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
+    }
 
-	public List<NodeEntity> getChildren() {
-		return children;
-	}
+    public java.util.List<NodeEntity> getChildren() {
+        return children;
+    }
 
-	public void setChildren(List<NodeEntity> children) {
-		this.children = children;
-	}
-
-    // getters y setters
-    
+    public void setChildren(java.util.List<NodeEntity> children) {
+        this.children = children;
+    }
 }
