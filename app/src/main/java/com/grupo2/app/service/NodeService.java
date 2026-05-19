@@ -1,13 +1,17 @@
 package com.grupo2.app.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.grupo2.app.model.AddChildRequest;
 import com.grupo2.app.model.CreateRootRequest;
 import com.grupo2.app.model.NodeEntity;
 import com.grupo2.app.model.NodeResponse;
 import com.grupo2.app.repository.NodeRepository;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
+import com.grupo2.treeengine.exception.InvalidNodeValueException;
+import com.grupo2.treeengine.exception.NodeNotFoundException;
+import com.grupo2.treeengine.exception.RootAlreadyExistsException;
 
 @Service
 public class NodeService {
@@ -18,14 +22,17 @@ public class NodeService {
         this.nodeRepository = nodeRepository;
     }
     
-    
-
-    
     // 🔹 Crear raíz
     public NodeResponse createRoot(CreateRootRequest request) {
+        
+        // Validar valor del nodo
+        if (request.getValue() == null || request.getValue().isBlank()) {
+            throw new InvalidNodeValueException(request.getValue());
+        }
 
+        // Validar que no exista ya una raíz
         if (nodeRepository.existsByParentIdIsNull()) {
-            throw new RuntimeException("Root ya existe");
+            throw new RootAlreadyExistsException();
         }
 
         NodeEntity node = new NodeEntity();
@@ -39,9 +46,15 @@ public class NodeService {
 
     // 🔹 Agregar hijo
     public NodeResponse addChild(String parentId, AddChildRequest request) {
+        
+        // Validar valor del nodo
+        if (request.getValue() == null || request.getValue().isBlank()) {
+            throw new InvalidNodeValueException(request.getValue());
+        }
 
+        // Validar que el padre exista
         NodeEntity parent = nodeRepository.findById(parentId)
-            .orElseThrow(() -> new IllegalStateException("Parent no existe"));
+            .orElseThrow(() -> new NodeNotFoundException(parentId));
 
         NodeEntity child = new NodeEntity();
         child.setValue(request.getValue());
@@ -55,6 +68,7 @@ public class NodeService {
         return nodeRepository.findAll();
     }
     
+    // 🔹 Método auxiliar para mapear entidad → DTO
     private NodeResponse mapToResponse(NodeEntity entity) {
         NodeResponse dto = new NodeResponse();
         dto.setId(entity.getId());
@@ -62,5 +76,4 @@ public class NodeService {
         dto.setParentId(entity.getParentId());
         return dto;
     }
-
 }
