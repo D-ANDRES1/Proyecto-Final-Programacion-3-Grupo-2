@@ -1,92 +1,94 @@
 package com.grupo2.app.persistence.strategy;
 
-import java.util.ArrayList;
+import com.grupo2.app.mapper.persistence.JpaNodeMapper;
+import com.grupo2.app.model.NodeEntity;
+import com.grupo2.app.model.TreeEntity;
+import com.grupo2.app.repository.NodeRepository;
+import com.grupo2.app.repository.TreeRepository;
+import com.grupo2.treeengine.domain.Node;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
-import com.grupo2.app.mapper.RequestMapper;
-import com.grupo2.app.mapper.ResponseMapper;
-import com.grupo2.app.model.NodeEntity;
-import com.grupo2.app.repository.NodeRepository;
-import com.grupo2.treeengine.core.TreeNode;
-
-@Component
-@Profile({"postgres", "h2"})
 public class JpaPersistenceStrategy implements PersistenceStrategy {
 
-    private final NodeRepository nodeRepository;
-    private final RequestMapper requestMapper;
-    private final ResponseMapper responseMapper;
+    private final NodeRepository repository;
+    private final TreeRepository treeRepository;
+    private final JpaNodeMapper mapper;
 
-    public JpaPersistenceStrategy(NodeRepository nodeRepository,
-                                  RequestMapper requestMapper,
-                                  ResponseMapper responseMapper) {
-        this.nodeRepository = nodeRepository;
-        this.requestMapper = requestMapper;
-        this.responseMapper = responseMapper;
+    public JpaPersistenceStrategy(
+            NodeRepository repository,
+            JpaNodeMapper mapper,
+            TreeRepository treeRepository
+    ) {
+        this.repository = repository;
+        this.mapper = mapper;
+        this.treeRepository = treeRepository;
     }
 
     @Override
-    public TreeNode createRoot(TreeNode node) {
-        // 1. Convertir TreeNode → NodeEntity
-        NodeEntity entity = requestMapper.toEntity(node);
-        // 2. Setear parentId y depth en NodeEntity (NO en TreeNode)
-        entity.setParentId(null); // raíz no tiene padre
-        // entity.setDepth(0); // 👈 TU NodeEntity NO tiene depth, lo quitamos
-        
-        // 3. Guardar en BD
-        NodeEntity saved = nodeRepository.save(entity);
-        
-        // 4. Convertir de vuelta a TreeNode
-        return responseMapper.toDomain(saved);
-    }
+    public Node save(Node node) {
+        NodeEntity entity = mapper.toEntity(node);
 
-    @Override
-    public TreeNode addChild(String parentId, TreeNode childNode) {
-        // 1. Convertir TreeNode → NodeEntity
-        NodeEntity entity = requestMapper.toEntity(childNode);
-        // 2. Setear parentId en NodeEntity
-        entity.setParentId(parentId);
-        // entity.setDepth(1); // 👈 TU NodeEntity NO tiene depth, lo quitamos
-        
-        // 3. Guardar
-        NodeEntity saved = nodeRepository.save(entity);
-        
-        // 4. Devolver como TreeNode
-        return responseMapper.toDomain(saved);
-    }
-
-    @Override
-    public Optional<TreeNode> findById(String id) {
-        return nodeRepository.findById(id)
-                .map(entity -> responseMapper.toDomain(entity));
-    }
-
-    @Override
-    public List<TreeNode> findAll() {
-        List<NodeEntity> entities = nodeRepository.findAll();
-        List<TreeNode> result = new ArrayList<>();
-        for (NodeEntity entity : entities) {
-            result.add(responseMapper.toDomain(entity));
+        if (node.getParentId() == null) {
+            // Es nodo raíz → crear árbol nuevo
+            TreeEntity newTree = new TreeEntity();
+            TreeEntity savedTree = treeRepository.save(newTree);
+            entity.setTree(savedTree);
+        } else {
+            // Es hijo → heredar el tree del padre
+            NodeEntity parent = repository.findById(node.getParentId())
+                .orElseThrow(() -> new RuntimeException("Parent not found: " + node.getParentId()));
+            entity.setTree(parent.getTree());
         }
-        return result;
+
+        NodeEntity saved = repository.save(entity);
+        return mapper.toDomain(saved);
     }
 
     @Override
-    public List<TreeNode> findChildren(String parentId) {
-        List<NodeEntity> entities = nodeRepository.findByParentId(parentId);
-        List<TreeNode> result = new ArrayList<>();
-        for (NodeEntity entity : entities) {
-            result.add(responseMapper.toDomain(entity));
-        }
-        return result;
+    public Optional<Node> findById(UUID id) {
+
+        return repository.findById(id)
+                .map(mapper::toDomain);
     }
 
     @Override
-    public void delete(String id) {
-        nodeRepository.deleteById(id);
+    public List<Node> findChildren(UUID parentId) {
+
+        return repository.findByParentId(parentId)
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Node> findRoots() {
+
+        return repository.findByParentIdIsNull()
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Node> findAllByTreeId(UUID treeId) {
+
+        return repository.findAll()
+                .stream()
+                .filter(entity ->
+                        entity.getTree() != null
+                        && entity.getTree().getId().equals(treeId)
+                )
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void delete(UUID id) {
+
+        repository.deleteById(id);
     }
 }

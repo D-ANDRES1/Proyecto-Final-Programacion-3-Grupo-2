@@ -6,6 +6,9 @@ import com.grupo2.app.model.CreateRootRequest;
 import com.grupo2.app.model.NodeEntity;
 import com.grupo2.app.model.NodeResponse;
 import com.grupo2.app.service.NodeService;
+
+import java.util.UUID;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,7 +28,7 @@ public class NodeController implements NodesApi {
     }
 
     @Override
-    public ResponseEntity<NodeResponse> addChild(String parentId, AddChildRequest body) {
+    public ResponseEntity<NodeResponse> addChild(UUID parentId, AddChildRequest body) {
         
         return ResponseEntity.status(201).body(service.addChild(parentId, body));
     }

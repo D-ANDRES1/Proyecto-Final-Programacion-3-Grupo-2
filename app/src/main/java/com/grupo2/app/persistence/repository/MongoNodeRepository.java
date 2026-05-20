@@ -13,5 +13,5 @@ public interface MongoNodeRepository extends MongoRepository<MongoNode, String> 
     
     boolean existsByParentIdIsNull();
     
-    MongoNode findByParentIdIsNull();
+    List<MongoNode> findByParentIdIsNull();
 }

@@ -1,44 +1,47 @@
 package com.grupo2.treeengine.service;
 
-import com.grupo2.treeengine.strategy.TreeAlgorithmStrategy;
+import com.grupo2.treeengine.domain.Node;
+import com.grupo2.treeengine.domain.TreeView;
+import com.grupo2.treeengine.strategy.ITreeAlgorithmStrategy;
 
 import java.util.List;
+import java.util.UUID;
 
 //Service para delegar, no calcula nada
 public class TreeService {
 
-    private final TreeAlgorithmStrategy strategy;
+    private final ITreeAlgorithmStrategy strategy;
     
     //Indica que estrategia se usara en el service
-    public TreeService(TreeAlgorithmStrategy strategy) {
+    public TreeService(ITreeAlgorithmStrategy strategy) {
         this.strategy = strategy;
     }
 
-    public String createRoot(String value) {
-        return strategy.createRoot(value);
+    public Node createRoot(Node domainNode) {
+        return strategy.createRoot(domainNode);
     }
 
-    public String addChild(String parentId, String value) {
-        return strategy.addChild(parentId, value);
+    public Node addChild(UUID parentId, Node domainNode) {
+        return strategy.addChild(parentId, domainNode);
     }
 
-    public List<String> getTree() {
+    public TreeView getTree() {
         return strategy.getTree();
     }
 
-    public List<String> getSubTree(String nodeId) {
+    public TreeView getSubTree(UUID nodeId) {
         return strategy.getSubTree(nodeId);
     }
 
-    public List<String> getPathToRoot(String nodeId) {
+    public List<Node> getPathToRoot(UUID nodeId) {
         return strategy.getPathToRoot(nodeId);
     }
 
-    public List<String> dfs() {
+    public List<Node> dfs() {
         return strategy.dfs();
     }
 
-    public List<String> bfs() {
+    public List<Node> bfs() {
         return strategy.bfs();
     }
 
@@ -46,11 +49,11 @@ public class TreeService {
         return strategy.getHeight();
     }
 
-    public int getDepth(String nodeId) {
+    public int getDepth(UUID nodeId) {
         return strategy.getDepth(nodeId);
     }
 
-    public List<String> getAncestors(String nodeId) {
+    public List<Node> getAncestors(UUID nodeId) {
         return strategy.getAncestors(nodeId);
     }
 

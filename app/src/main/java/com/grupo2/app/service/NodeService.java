@@ -1,66 +1,66 @@
 package com.grupo2.app.service;
 
+import com.grupo2.app.mapper.api.NodeApiMapper;
 import com.grupo2.app.model.AddChildRequest;
 import com.grupo2.app.model.CreateRootRequest;
-import com.grupo2.app.model.NodeEntity;
 import com.grupo2.app.model.NodeResponse;
-import com.grupo2.app.repository.NodeRepository;
+import com.grupo2.app.persistence.strategy.PersistenceStrategy;
+import com.grupo2.treeengine.domain.Node;
+import com.grupo2.treeengine.service.TreeService;
+
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.UUID;
 
 @Service
 public class NodeService {
 
-    private final NodeRepository nodeRepository;
+    private final TreeService treeService;
 
-    public NodeService(NodeRepository nodeRepository) {
-        this.nodeRepository = nodeRepository;
+    private final NodeApiMapper mapper;
+    
+    private final PersistenceStrategy persistence;
+
+    public NodeService(
+            TreeService treeService,
+            NodeApiMapper mapper,
+            PersistenceStrategy persistence
+    ) {
+        this.treeService = treeService;
+        this.mapper = mapper;
+        this.persistence = persistence;
     }
-    
-    
 
-    
-    // 🔹 Crear raíz
+    // =========================
+    // CREATE ROOT
+    // =========================
+
     public NodeResponse createRoot(CreateRootRequest request) {
 
-        if (nodeRepository.existsByParentIdIsNull()) {
-            throw new RuntimeException("Root ya existe");
-        }
+        Node domainNode = mapper.toDomain(request);
 
-        NodeEntity node = new NodeEntity();
-        node.setValue(request.getValue());
-        node.setParentId(null);
+        Node computedNode = treeService.createRoot(domainNode);
 
-        NodeEntity saved = nodeRepository.save(node);
+        Node savedNode = persistence.save(computedNode);
 
-        return mapToResponse(saved);
+        return mapper.toResponse(savedNode);
     }
 
-    // 🔹 Agregar hijo
-    public NodeResponse addChild(String parentId, AddChildRequest request) {
+    // =========================
+    // ADD CHILD
+    // =========================
 
-        NodeEntity parent = nodeRepository.findById(parentId)
-            .orElseThrow(() -> new IllegalStateException("Parent no existe"));
+    public NodeResponse addChild(
+            UUID parentId,
+            AddChildRequest request
+    ) {
 
-        NodeEntity child = new NodeEntity();
-        child.setValue(request.getValue());
-        child.setParentId(parent.getId());
+        Node domainNode = mapper.toDomain(request);
 
-        return mapToResponse(nodeRepository.save(child));
+        Node computedNode = treeService.addChild(parentId, domainNode);
+
+        Node savedNode = persistence.save(computedNode);
+
+        return mapper.toResponse(savedNode);
     }
-
-    // 🔹 Listar todo el árbol
-    public List<NodeEntity> getAll() {
-        return nodeRepository.findAll();
-    }
-    
-    private NodeResponse mapToResponse(NodeEntity entity) {
-        NodeResponse dto = new NodeResponse();
-        dto.setId(entity.getId());
-        dto.setValue(entity.getValue());
-        dto.setParentId(entity.getParentId());
-        return dto;
-    }
-
 }

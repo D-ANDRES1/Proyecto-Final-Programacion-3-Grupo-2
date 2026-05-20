@@ -1,49 +1,69 @@
 package com.grupo2.treeengine.strategy.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-import com.grupo2.treeengine.strategy.TreeAlgorithmStrategy;
+import com.grupo2.treeengine.core.TreeNode;
+import com.grupo2.treeengine.domain.Node;
+import com.grupo2.treeengine.domain.TreeView;
+import com.grupo2.treeengine.strategy.ITreeAlgorithmStrategy;
 
-public class CustomTreeAlgorithmStrategy implements TreeAlgorithmStrategy {
+public class CustomTreeAlgorithmStrategy implements ITreeAlgorithmStrategy {
+	
+	private TreeNode root; // ✅ el árbol en memoria
+
+    @Override
+    public Node createRoot(Node value) {
+        // La estrategia solo define lógica de árbol, no genera treeId
+        root = new TreeNode(null, value.getValue(), null);
+
+        return new Node(
+            null,             // id: lo genera la BD
+            value.getValue(),
+            null,             // parentId: es raíz
+            null              // treeId: lo asigna JpaPersistenceStrategy
+        );
+    }
+
+    @Override
+    public Node addChild(UUID parentId, Node value) {
+        // TODO: buscar el padre en el árbol en memoria y agregar hijo
+        return new Node(
+            null,
+            value.getValue(),
+            parentId,
+            null  // treeId: lo asigna JpaPersistenceStrategy del padre
+        );
+    }
 
 	@Override
-	public String createRoot(String value) {
+	public TreeView getTree() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String addChild(String parentId, String value) {
+	public TreeView getSubTree(UUID nodeId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<String> getTree() {
+	public List<Node> getPathToRoot(UUID nodeId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<String> getSubTree(String nodeId) {
+	public List<Node> dfs() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<String> getPathToRoot(String nodeId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> dfs() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> bfs() {
+	public List<Node> bfs() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -55,13 +75,13 @@ public class CustomTreeAlgorithmStrategy implements TreeAlgorithmStrategy {
 	}
 
 	@Override
-	public int getDepth(String nodeId) {
+	public int getDepth(UUID nodeId) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public List<String> getAncestors(String nodeId) {
+	public List<Node> getAncestors(UUID nodeId) {
 		// TODO Auto-generated method stub
 		return null;
 	}

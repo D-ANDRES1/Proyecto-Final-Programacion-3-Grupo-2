@@ -1,5 +1,7 @@
 package com.grupo2.app.model;
 
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -9,22 +11,30 @@ public class NodeEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
 
     @Column(name = "node_value", length = 255, nullable = false)
     @NotBlank(message = "El valor del nodo no puede estar vacío")
     @Size(min = 1, max = 64, message = "El valor debe tener entre 1 y 64 caracteres")
     private String value;
 
-    @Column(name = "parent_id", length = 50)
-    private String parentId;
+    @Column(name = "parent_id", length = 36)
+    private UUID parentId;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tree_id")
+    private TreeEntity tree;
 
     @Transient
     private java.util.List<NodeEntity> children = new java.util.ArrayList<>();
 
     // Getters y Setters
-    public String getId() {
+    public UUID getId() {
         return id;
+    }
+    
+    public TreeEntity getTree() {
+    	return tree;
     }
 
     public String getValue() {
@@ -35,12 +45,16 @@ public class NodeEntity {
         this.value = value;
     }
 
-    public String getParentId() {
+    public UUID getParentId() {
         return parentId;
     }
 
-    public void setParentId(String parentId) {
+    public void setParentId(UUID parentId) {
         this.parentId = parentId;
+    }
+    
+    public void setTree(TreeEntity tree) { // ✅
+        this.tree = tree;
     }
 
     public java.util.List<NodeEntity> getChildren() {

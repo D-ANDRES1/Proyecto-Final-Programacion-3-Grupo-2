@@ -1,86 +1,79 @@
 package com.grupo2.app.persistence.strategy;
 
-import com.grupo2.app.mapper.MongoMapper;
+import com.grupo2.app.mapper.persistence.MongoNodeMapper;
 import com.grupo2.app.model.MongoNode;
 import com.grupo2.app.persistence.repository.MongoNodeRepository;
-import com.grupo2.treeengine.core.TreeNode;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
+import com.grupo2.treeengine.domain.Node;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-@Component
-@Profile({"mongo", "mongodb"})
 public class MongoPersistenceStrategy implements PersistenceStrategy {
 
-    private final MongoNodeRepository mongoRepository;
-    private final MongoMapper mongoMapper;
+    private final MongoNodeRepository repository;
+    private final MongoNodeMapper mapper;
 
-    public MongoPersistenceStrategy(MongoNodeRepository mongoRepository,
-                                    MongoMapper mongoMapper) {
-        this.mongoRepository = mongoRepository;
-        this.mongoMapper = mongoMapper;
+    public MongoPersistenceStrategy(
+            MongoNodeRepository repository,
+            MongoNodeMapper mapper
+    ) {
+        this.repository = repository;
+        this.mapper = mapper;
     }
 
     @Override
-    public TreeNode createRoot(TreeNode node) {
-        String id = node.getId() != null ? node.getId() : UUID.randomUUID().toString();
-        TreeNode newNode = new TreeNode(id, node.getValue());
-        return saveTreeNode(newNode, null);
+    public Node save(Node node) {
+
+        MongoNode mongoNode = mapper.toEntity(node);
+
+        MongoNode savedNode = repository.save(mongoNode);
+
+        return mapper.toDomain(savedNode);
     }
 
     @Override
-    public TreeNode addChild(String parentId, TreeNode childNode) {
-        String id = childNode.getId() != null ? childNode.getId() : UUID.randomUUID().toString();
-        TreeNode newNode = new TreeNode(id, childNode.getValue());
-        return saveTreeNode(newNode, parentId);
+    public Optional<Node> findById(UUID id) {
+
+        return repository.findById(id.toString())
+                .map(mapper::toDomain);
     }
 
     @Override
-    public Optional<TreeNode> findById(String id) {
-        Optional<MongoNode> optionalNode = mongoRepository.findById(id);
-        if (optionalNode.isPresent()) {
-            return Optional.of(mongoMapper.toDomain(optionalNode.get()));
-        }
-        return Optional.empty();
+    public List<Node> findChildren(UUID parentId) {
+
+        return repository.findByParentId(parentId.toString())
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<TreeNode> findAll() {
-        List<MongoNode> nodes = mongoRepository.findAll();
-        List<TreeNode> result = new ArrayList<>();
-        for (MongoNode node : nodes) {
-            result.add(mongoMapper.toDomain(node));
-        }
-        return result;
+    public List<Node> findRoots() {
+
+        return repository.findByParentIdIsNull()
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<TreeNode> findChildren(String parentId) {
-        List<MongoNode> children = mongoRepository.findByParentId(parentId);
-        List<TreeNode> result = new ArrayList<>();
-        for (MongoNode node : children) {
-            result.add(mongoMapper.toDomain(node));
-        }
-        return result;
+    public List<Node> findAllByTreeId(UUID treeId) {
+
+        return repository.findAll()
+                .stream()
+                .filter(node ->
+                        node.getTreeId() != null
+                        && node.getTreeId().equals(treeId.toString())
+                )
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void delete(String id) {
-        mongoRepository.deleteById(id);
-        List<MongoNode> children = mongoRepository.findByParentId(id);
-        for (MongoNode child : children) {
-            delete(child.getId());
-        }
-    }
+    public void delete(UUID id) {
 
-    private TreeNode saveTreeNode(TreeNode node, String parentId) {
-        MongoNode mongoNode = mongoMapper.toMongoNode(node);
-        mongoNode.setParentId(parentId);
-        MongoNode saved = mongoRepository.save(mongoNode);
-        return mongoMapper.toDomain(saved);
+        repository.deleteById(id.toString());
     }
 }
