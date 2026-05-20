@@ -58,6 +58,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -96,6 +97,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
       responses:
         '200':
           description: OK
@@ -115,6 +117,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
       responses:
         '200':
           description: OK
@@ -167,6 +170,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
       responses:
         '200':
           description: OK
@@ -186,6 +190,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
       responses:
         '200':
           description: OK
@@ -207,48 +212,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationResponse'
 
+  # =========================
+  # ERROR HANDLING GLOBAL
+  # =========================
 
 components:
   schemas:
 
+    # =====================
+    # HEALTH
+    # =====================
     HealthResponse:
       type: object
       properties:
         status:
           type: string
-          example: "UP"
+          example: UP
 
+    # =====================
+    # REQUESTS
+    # =====================
     CreateRootRequest:
       type: object
+      required: [value]
       properties:
         value:
           type: string
-      required:
-        - value
 
     AddChildRequest:
       type: object
+      required: [value]
       properties:
         value:
           type: string
-      required:
-        - value
 
+    # =====================
+    # RESPONSES
+    # =====================
     NodeResponse:
       type: object
       properties:
         id:
           type: string
+          format: uuid
         value:
           type: string
         parentId:
           type: string
+          format: uuid
 
     TreeResponse:
       type: object
       properties:
         id:
           type: string
+          format: uuid
         value:
           type: string
         children:
@@ -263,6 +281,7 @@ components:
           type: array
           items:
             type: string
+            format: uuid
 
     ListResponse:
       type: object
@@ -271,6 +290,7 @@ components:
           type: array
           items:
             type: string
+            format: uuid
 
     HeightResponse:
       type: object
@@ -291,3 +311,41 @@ components:
       properties:
         valid:
           type: boolean
+
+    # =====================
+    # ERROR HANDLING (IMPORTANTE)
+    # =====================
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        code:
+          type: string
+        message:
+          type: string
+
+    FieldError:
+      type: object
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        code:
+          type: string
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'

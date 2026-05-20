@@ -19,6 +19,9 @@ public class MongoNode {
 
     @Field("parent_id")
     private String parentId;
+    
+    @Field("tree_id")
+    private String treeId;
 
     // Constructor vacío (requerido por Spring Data Mongo)
     public MongoNode() {
@@ -28,6 +31,12 @@ public class MongoNode {
     public MongoNode(String value, String parentId) {
         this.value = value;
         this.parentId = parentId;
+    }
+    
+    public MongoNode(String value, String parentId, String treeId) {
+        this.value = value;
+        this.parentId = parentId;
+        this.treeId = treeId;
     }
 
     // Getters y Setters
@@ -53,5 +62,13 @@ public class MongoNode {
 
     public void setParentId(String parentId) {
         this.parentId = parentId;
+    }
+    
+    public String getTreeId() {
+        return treeId;
+    }
+
+    public void setTreeId(String treeId) {
+        this.treeId = treeId;
     }
 }

@@ -6,18 +6,19 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Repositorio JPA para NodeEntity.
  * Compatible con NodeService existente.
  */
 @Repository
-public interface NodeRepository extends JpaRepository<NodeEntity, String> {
+public interface NodeRepository extends JpaRepository<NodeEntity, UUID> {
     
     /**
      * Buscar hijos por ID del padre
      */
-    List<NodeEntity> findByParentId(String parentId);
+    List<NodeEntity> findByParentId(UUID parentId);
     
     /**
      * Verificar si ya existe un nodo raíz (parentId es null)

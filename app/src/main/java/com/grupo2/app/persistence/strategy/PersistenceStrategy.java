@@ -3,24 +3,26 @@ package com.grupo2.app.persistence.strategy;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-import com.grupo2.treeengine.core.TreeNode;
+
+import com.grupo2.treeengine.domain.Node;
 
 /**
  * Interfaz que define cómo persistir nodos.
  * Todas las estrategias (JPA, Mongo, Memoria) deben implementarla.
  */
 public interface PersistenceStrategy {
-    
-    TreeNode createRoot(TreeNode node);
-    
-    TreeNode addChild(String parentId, TreeNode childNode);
-    
-    Optional<TreeNode> findById(String id);
-    
-    List<TreeNode> findAll();
-    
-    List<TreeNode> findChildren(String parentId);
-    
-    void delete(String id);
+
+    Node save(Node node);
+
+    Optional<Node> findById(UUID id);
+
+    List<Node> findChildren(UUID parentId);
+
+    List<Node> findRoots();
+
+    List<Node> findAllByTreeId(UUID treeId);
+
+    void delete(UUID id);
 }
