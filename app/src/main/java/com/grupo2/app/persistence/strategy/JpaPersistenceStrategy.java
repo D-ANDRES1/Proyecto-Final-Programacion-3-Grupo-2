@@ -91,4 +91,12 @@ public class JpaPersistenceStrategy implements PersistenceStrategy {
 
         repository.deleteById(id);
     }
+    
+    @Override
+    public List<Node> findAll() {
+        return repository.findAll()
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
 }

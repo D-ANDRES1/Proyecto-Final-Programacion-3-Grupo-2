@@ -25,4 +25,6 @@ public interface PersistenceStrategy {
     List<Node> findAllByTreeId(UUID treeId);
 
     void delete(UUID id);
+
+	List<Node> findAll();
 }

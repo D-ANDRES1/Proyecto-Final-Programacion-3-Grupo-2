@@ -1,14 +1,20 @@
 package com.grupo2.app.config;
 
-import com.grupo2.treeengine.exception.*;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import com.grupo2.treeengine.exception.CycleDetectedException;
+import com.grupo2.treeengine.exception.InvalidNodeValueException;
+import com.grupo2.treeengine.exception.InvalidOperationException;
+import com.grupo2.treeengine.exception.NodeNotFoundException;
+import com.grupo2.treeengine.exception.RootAlreadyExistsException;
+import com.grupo2.treeengine.exception.TreeException;
 
 /**
  * Captura las excepciones del tree-engine y las convierte en respuestas HTTP estándar.
@@ -16,7 +22,9 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Método auxiliar para construir respuesta de error
+    // =========================
+    // MÉTODO AUXILIAR PARA ERRORES
+    // =========================
     private ResponseEntity<Map<String, Object>> buildError(HttpStatus status, String message) {
         Map<String, Object> error = new HashMap<>();
         error.put("timestamp", LocalDateTime.now());
@@ -25,6 +33,10 @@ public class GlobalExceptionHandler {
         error.put("message", message);
         return new ResponseEntity<>(error, status);
     }
+
+    // =========================
+    // MANEJO DE EXCEPCIONES
+    // =========================
 
     @ExceptionHandler(NodeNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNodeNotFound(NodeNotFoundException ex) {
@@ -56,7 +68,6 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 
-    // Fallback para cualquier otra excepción no controlada
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor");

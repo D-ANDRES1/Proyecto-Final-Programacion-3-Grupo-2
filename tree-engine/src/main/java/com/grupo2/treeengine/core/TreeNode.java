@@ -45,4 +45,8 @@ public class TreeNode {
     public void addChild(TreeNode child) {
         this.children.add(child);
     }
+
+	public void setParent(TreeNode parent2) {
+		this.parent = parent ;
+	}
 }
