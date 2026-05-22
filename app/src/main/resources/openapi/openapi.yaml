@@ -15,337 +15,533 @@ tags:
 
 paths:
 
+  # =====================================================
+  # HEALTH
+  # =====================================================
+
   /health:
     get:
-      tags: [Health]
+      tags:
+        - Health
       operationId: healthCheck
       summary: Health check del sistema
+
       responses:
         '200':
           description: OK
+
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
 
+  # =====================================================
+  # CREATE ROOT
+  # =====================================================
+
   /nodes/root:
     post:
-      tags: [Nodes]
+      tags:
+        - Nodes
+
       operationId: createRoot
+
       summary: Crear nodo raíz
+
       requestBody:
         required: true
+
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateRootRequest'
+
       responses:
         '201':
           description: Root creado
+
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/NodeResponse'
 
+  # =====================================================
+  # ADD CHILD
+  # =====================================================
+
   /nodes/{parentId}/children:
     post:
-      tags: [Nodes]
+      tags:
+        - Nodes
+
       operationId: addChild
+
       summary: Agregar hijo a un nodo
+
       parameters:
         - name: parentId
           in: path
           required: true
+
           schema:
             type: string
             format: uuid
+
       requestBody:
         required: true
+
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/AddChildRequest'
+
       responses:
         '201':
           description: Hijo agregado
+
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/NodeResponse'
 
+  # =====================================================
+  # GET ALL TREES
+  # =====================================================
+
   /tree:
     get:
-      tags: [Tree]
+      tags:
+        - Tree
+
       operationId: getTree
-      summary: Obtener árbol completo
+
+      summary: Obtener todos los árboles
+
       responses:
         '200':
           description: OK
+
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TreeResponse'
+                $ref: '#/components/schemas/TreeListResponse'
+
+  # =====================================================
+  # GET SUBTREE
+  # =====================================================
 
   /tree/{nodeId}:
     get:
-      tags: [Tree]
+      tags:
+        - Tree
+
       operationId: getSubTree
+
       summary: Obtener subárbol
+
       parameters:
         - name: nodeId
           in: path
           required: true
+
           schema:
             type: string
             format: uuid
+
       responses:
         '200':
           description: OK
+
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TreeResponse'
 
+  # =====================================================
+  # GET PATH TO ROOT
+  # =====================================================
+
   /nodes/{nodeId}/path:
     get:
-      tags: [Nodes]
+      tags:
+        - Nodes
+
       operationId: getPathToRoot
+
       summary: Ruta desde raíz a nodo
+
       parameters:
         - name: nodeId
           in: path
           required: true
+
           schema:
             type: string
             format: uuid
+
       responses:
         '200':
           description: OK
+
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PathResponse'
 
+  # =====================================================
+  # TRAVERSAL
+  # =====================================================
+
   /tree/traversal:
     get:
-      tags: [Tree]
+      tags:
+        - Tree
+
       operationId: traversal
+
       summary: Recorrido DFS/BFS
+
       parameters:
         - name: type
           in: query
           required: true
+
           schema:
             type: string
-            enum: [DFS, BFS]
+            enum:
+              - DFS
+              - BFS
+
       responses:
         '200':
           description: OK
+
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListResponse'
 
+  # =====================================================
+  # HEIGHT
+  # =====================================================
+
   /tree/height:
     get:
-      tags: [Tree]
+      tags:
+        - Tree
+
       operationId: getHeight
+
       summary: Altura del árbol
+
       responses:
         '200':
           description: OK
+
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HeightResponse'
 
+  # =====================================================
+  # DEPTH
+  # =====================================================
+
   /nodes/{nodeId}/depth:
     get:
-      tags: [Nodes]
+      tags:
+        - Nodes
+
       operationId: getDepth
+
       summary: Profundidad de un nodo
+
       parameters:
         - name: nodeId
           in: path
           required: true
+
           schema:
             type: string
             format: uuid
+
       responses:
         '200':
           description: OK
+
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DepthResponse'
 
+  # =====================================================
+  # ANCESTORS
+  # =====================================================
+
   /nodes/{nodeId}/ancestors:
     get:
-      tags: [Nodes]
+      tags:
+        - Nodes
+
       operationId: getAncestors
+
       summary: Ancestros de un nodo
+
       parameters:
         - name: nodeId
           in: path
           required: true
+
           schema:
             type: string
             format: uuid
+
       responses:
         '200':
           description: OK
+
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListResponse'
 
+  # =====================================================
+  # VALIDATE
+  # =====================================================
+
   /tree/validate:
     get:
-      tags: [Tree]
+      tags:
+        - Tree
+
       operationId: validateNoCycles
+
       summary: Validar que no existan ciclos
+
       responses:
         '200':
           description: OK
+
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationResponse'
 
-  # =========================
-  # ERROR HANDLING GLOBAL
-  # =========================
-
 components:
+
   schemas:
 
-    # =====================
+    # =====================================================
     # HEALTH
-    # =====================
+    # =====================================================
+
     HealthResponse:
       type: object
+
       properties:
         status:
           type: string
           example: UP
 
-    # =====================
+    # =====================================================
     # REQUESTS
-    # =====================
+    # =====================================================
+
     CreateRootRequest:
       type: object
-      required: [value]
+
+      required:
+        - value
+
       properties:
         value:
           type: string
 
     AddChildRequest:
       type: object
-      required: [value]
+
+      required:
+        - value
+
       properties:
         value:
           type: string
 
-    # =====================
-    # RESPONSES
-    # =====================
+    # =====================================================
+    # NODE RESPONSE
+    # =====================================================
+
     NodeResponse:
       type: object
+
       properties:
         id:
           type: string
           format: uuid
+
         value:
           type: string
+
         parentId:
           type: string
           format: uuid
 
+        treeId:
+          type: string
+          format: uuid
+
+    # =====================================================
+    # TREE RESPONSE
+    # =====================================================
+
     TreeResponse:
       type: object
+
       properties:
         id:
           type: string
           format: uuid
+
         value:
           type: string
+
         children:
           type: array
+
           items:
             $ref: '#/components/schemas/TreeResponse'
 
-    PathResponse:
-      type: object
-      properties:
-        path:
-          type: array
-          items:
-            type: string
-            format: uuid
+    # =====================================================
+    # TREE LIST RESPONSE
+    # =====================================================
 
-    ListResponse:
+    TreeListResponse:
       type: object
+
       properties:
         items:
           type: array
+
+          items:
+            $ref: '#/components/schemas/TreeResponse'
+
+    # =====================================================
+    # PATH RESPONSE
+    # =====================================================
+
+    PathResponse:
+      type: object
+
+      properties:
+        path:
+          type: array
+
           items:
             type: string
             format: uuid
 
+    # =====================================================
+    # GENERIC LIST RESPONSE
+    # =====================================================
+
+    ListResponse:
+      type: object
+
+      properties:
+        items:
+          type: array
+
+          items:
+            type: string
+            format: uuid
+
+    # =====================================================
+    # HEIGHT RESPONSE
+    # =====================================================
+
     HeightResponse:
       type: object
+
       properties:
         height:
           type: integer
           format: int32
 
+    # =====================================================
+    # DEPTH RESPONSE
+    # =====================================================
+
     DepthResponse:
       type: object
+
       properties:
         depth:
           type: integer
           format: int32
 
+    # =====================================================
+    # VALIDATION RESPONSE
+    # =====================================================
+
     ValidationResponse:
       type: object
+
       properties:
         valid:
           type: boolean
 
-    # =====================
-    # ERROR HANDLING (IMPORTANTE)
-    # =====================
+    # =====================================================
+    # ERROR RESPONSE
+    # =====================================================
 
     ErrorResponse:
       type: object
+
       properties:
         timestamp:
           type: string
           format: date-time
+
         code:
           type: string
+
         message:
           type: string
+
+    # =====================================================
+    # FIELD ERROR
+    # =====================================================
 
     FieldError:
       type: object
+
       properties:
         field:
           type: string
+
         message:
           type: string
 
+    # =====================================================
+    # VALIDATION ERROR RESPONSE
+    # =====================================================
+
     ValidationErrorResponse:
       type: object
+
       properties:
         timestamp:
           type: string
           format: date-time
+
         code:
           type: string
+
         message:
           type: string
+
         errors:
           type: array
+
           items:
             $ref: '#/components/schemas/FieldError'

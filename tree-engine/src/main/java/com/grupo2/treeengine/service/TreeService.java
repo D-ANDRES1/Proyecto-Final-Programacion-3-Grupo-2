@@ -1,63 +1,137 @@
 package com.grupo2.treeengine.service;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.grupo2.treeengine.domain.Node;
 import com.grupo2.treeengine.domain.TreeView;
 import com.grupo2.treeengine.strategy.ITreeAlgorithmStrategy;
 
-import java.util.List;
-import java.util.UUID;
-
-//Service para delegar, no calcula nada
+/*
+ * Service del engine.
+ * SOLO delega algoritmos.
+ * NO guarda estado.
+ */
 public class TreeService {
 
     private final ITreeAlgorithmStrategy strategy;
-    
-    //Indica que estrategia se usara en el service
-    public TreeService(ITreeAlgorithmStrategy strategy) {
+
+    public TreeService(
+            ITreeAlgorithmStrategy strategy
+    ) {
         this.strategy = strategy;
     }
 
-    public Node createRoot(Node domainNode) {
-        return strategy.createRoot(domainNode);
+    // =====================================================
+    // CREATE OPERATIONS
+    // =====================================================
+
+    public Node createRoot(Node node) {
+
+        return strategy.createRoot(node);
     }
 
-    public Node addChild(UUID parentId, Node domainNode) {
-        return strategy.addChild(parentId, domainNode);
+    public Node addChild(
+            UUID parentId,
+            Node node,
+            UUID treeId
+    ) {
+
+        return strategy.addChild(
+                parentId,
+                node,
+                treeId
+        );
     }
 
-    public TreeView getTree() {
-        return strategy.getTree();
+    // =====================================================
+    // TREE BUILDING
+    // =====================================================
+
+    public TreeView buildTree(
+            List<Node> nodes
+    ) {
+
+        return strategy.buildTree(nodes);
     }
 
-    public TreeView getSubTree(UUID nodeId) {
-        return strategy.getSubTree(nodeId);
+    public TreeView buildSubTree(
+            UUID nodeId,
+            List<Node> nodes
+    ) {
+
+        return strategy.buildSubTree(
+                nodeId,
+                nodes
+        );
     }
 
-    public List<Node> getPathToRoot(UUID nodeId) {
-        return strategy.getPathToRoot(nodeId);
+    // =====================================================
+    // TRAVERSALS
+    // =====================================================
+
+    public List<Node> dfs(
+            List<Node> nodes
+    ) {
+
+        return strategy.dfs(nodes);
     }
 
-    public List<Node> dfs() {
-        return strategy.dfs();
+    public List<Node> bfs(
+            List<Node> nodes
+    ) {
+
+        return strategy.bfs(nodes);
     }
 
-    public List<Node> bfs() {
-        return strategy.bfs();
+    // =====================================================
+    // QUERIES
+    // =====================================================
+
+    public List<Node> getPathToRoot(
+            UUID nodeId,
+            List<Node> nodes
+    ) {
+
+        return strategy.getPathToRoot(
+                nodeId,
+                nodes
+        );
     }
 
-    public int getHeight() {
-        return strategy.getHeight();
+    public List<Node> getAncestors(
+            UUID nodeId,
+            List<Node> nodes
+    ) {
+
+        return strategy.getAncestors(
+                nodeId,
+                nodes
+        );
     }
 
-    public int getDepth(UUID nodeId) {
-        return strategy.getDepth(nodeId);
+    public int getHeight(
+            List<Node> nodes
+    ) {
+
+        return strategy.getHeight(nodes);
     }
 
-    public List<Node> getAncestors(UUID nodeId) {
-        return strategy.getAncestors(nodeId);
+    public int getDepth(
+            UUID nodeId,
+            List<Node> nodes
+    ) {
+
+        return strategy.getDepth(
+                nodeId,
+                nodes
+        );
     }
 
-    public boolean validateNoCycles() {
-        return strategy.validateNoCycles();
+    public boolean validateNoCycles(
+            List<Node> nodes
+    ) {
+
+        return strategy.validateNoCycles(nodes);
     }
 }

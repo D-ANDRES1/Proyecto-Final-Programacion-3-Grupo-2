@@ -7,26 +7,50 @@ import com.grupo2.treeengine.domain.Node;
 import com.grupo2.treeengine.domain.TreeView;
 
 public interface ITreeAlgorithmStrategy {
-	//Agregando metodos obligatorios de la interfaz. Node  y TreeView son el domain, osea lo externo.
-	Node createRoot(Node domainNode);
 
-    Node addChild(UUID parentId, Node domainNode);
+    // CREATE OPERATIONS
 
-    TreeView getTree();
+    Node createRoot(Node node);
 
-    TreeView getSubTree(UUID nodeId);
+    Node addChild(
+            UUID parentId,
+            Node node,
+            UUID treeId
+    );
 
-    List<Node> getPathToRoot(UUID nodeId);
+    // TREE BUILDING
 
-    List<Node> dfs();
+    TreeView buildTree(List<Node> nodes);
 
-    List<Node> bfs();
+    TreeView buildSubTree(
+            UUID nodeId,
+            List<Node> nodes
+    );
 
-    int getHeight();
+    // TRAVERSALS
 
-    int getDepth(UUID nodeId);
+    List<Node> dfs(List<Node> nodes);
 
-    List<Node> getAncestors(UUID nodeId);
+    List<Node> bfs(List<Node> nodes);
 
-    boolean validateNoCycles();
+    // QUERIES
+
+    List<Node> getPathToRoot(
+            UUID nodeId,
+            List<Node> nodes
+    );
+
+    List<Node> getAncestors(
+            UUID nodeId,
+            List<Node> nodes
+    );
+
+    int getHeight(List<Node> nodes);
+
+    int getDepth(
+            UUID nodeId,
+            List<Node> nodes
+    );
+
+    boolean validateNoCycles(List<Node> nodes);
 }

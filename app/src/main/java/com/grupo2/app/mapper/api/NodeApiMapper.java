@@ -40,6 +40,10 @@ public class NodeApiMapper {
         if (node.getParentId() != null) {
             response.setParentId(node.getParentId());
         }
+        
+        if (node.getTreeId() != null) {
+            response.setTreeId(node.getTreeId());
+        }
 
         return response;
     }

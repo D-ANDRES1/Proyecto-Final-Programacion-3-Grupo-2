@@ -3,6 +3,7 @@ package com.grupo2.app.mapper.persistence;
 import org.springframework.stereotype.Component;
 
 import com.grupo2.app.model.NodeEntity;
+import com.grupo2.app.model.TreeEntity;
 import com.grupo2.treeengine.domain.Node;
 
 @Component
@@ -14,9 +15,24 @@ public class JpaNodeMapper
 
         NodeEntity entity = new NodeEntity();
 
+        // IMPORTANTE:
+        // Ahora el engine genera IDs
+
+        entity.setId(node.getId());
+
         entity.setValue(node.getValue());
 
         entity.setParentId(node.getParentId());
+
+        // Asociar tree
+        if (node.getTreeId() != null) {
+
+            TreeEntity tree = new TreeEntity();
+
+            tree.setId(node.getTreeId());
+
+            entity.setTree(tree);
+        }
 
         return entity;
     }
@@ -28,7 +44,9 @@ public class JpaNodeMapper
                 entity.getId(),
                 entity.getValue(),
                 entity.getParentId(),
-                entity.getTree().getId()
+                entity.getTree() != null
+                        ? entity.getTree().getId()
+                        : null
         );
     }
 }

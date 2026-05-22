@@ -1,34 +1,30 @@
 package com.grupo2.treeengine.domain;
 
 import java.util.UUID;
-/*
- * EL dominio con el que se externalizara la informacion.
- */
-
-
 
 public class Node {
+
     private UUID id;
+
     private String value;
+
     private UUID parentId;
-    private UUID tree;
+
+    private UUID treeId;
 
     public Node() {}
 
-    public Node(UUID id, String value, UUID parentId) {
+    public Node(
+            UUID id,
+            String value,
+            UUID parentId,
+            UUID treeId
+    ) {
         this.id = id;
         this.value = value;
         this.parentId = parentId;
-        
+        this.treeId = treeId;
     }
-    
-    public Node(UUID id, String value, UUID parentId, UUID tree) {
-        this.id = id;
-        this.value = value;
-        this.parentId = parentId;
-        this.tree = tree;
-    }
-
 
     public Node(String value) {
         this.value = value;
@@ -45,10 +41,6 @@ public class Node {
     public String getValue() {
         return value;
     }
-    
-    public UUID getTreeId() {
-    	return tree;
-    }
 
     public void setValue(String value) {
         this.value = value;
@@ -60,5 +52,13 @@ public class Node {
 
     public void setParentId(UUID parentId) {
         this.parentId = parentId;
+    }
+
+    public UUID getTreeId() {
+        return treeId;
+    }
+
+    public void setTreeId(UUID treeId) {
+        this.treeId = treeId;
     }
 }

@@ -30,22 +30,26 @@ public class JpaPersistenceStrategy implements PersistenceStrategy {
 
     @Override
     public Node save(Node node) {
+
         NodeEntity entity = mapper.toEntity(node);
 
-        if (node.getParentId() == null) {
-            // Es nodo raíz → crear árbol nuevo
-            TreeEntity newTree = new TreeEntity();
-            TreeEntity savedTree = treeRepository.save(newTree);
-            entity.setTree(savedTree);
-        } else {
-            // Es hijo → heredar el tree del padre
-            NodeEntity parent = repository.findById(node.getParentId())
-                .orElseThrow(() -> new RuntimeException("Parent not found: " + node.getParentId()));
-            entity.setTree(parent.getTree());
-        }
+        TreeEntity tree = treeRepository
+                .findById(node.getTreeId())
+                .orElseGet(() -> {
+                    TreeEntity newTree = new TreeEntity();
+                    newTree.setId(node.getTreeId());
+                    return treeRepository.save(newTree);
+                });
+
+        entity.setTree(tree);
 
         NodeEntity saved = repository.save(entity);
-        return mapper.toDomain(saved);
+
+        // ✅ recargar desde BD para que tree esté disponible
+        NodeEntity reloaded = repository.findById(saved.getId())
+                .orElse(saved);
+
+        return mapper.toDomain(reloaded);
     }
 
     @Override
@@ -76,19 +80,24 @@ public class JpaPersistenceStrategy implements PersistenceStrategy {
     @Override
     public List<Node> findAllByTreeId(UUID treeId) {
 
-        return repository.findAll()
+        return repository.findByTree_Id(treeId)
                 .stream()
-                .filter(entity ->
-                        entity.getTree() != null
-                        && entity.getTree().getId().equals(treeId)
-                )
                 .map(mapper::toDomain)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public void delete(UUID id) {
 
         repository.deleteById(id);
+    }
+    
+    @Override
+    public List<Node> findAll() {
+
+        return repository.findAll()
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 }

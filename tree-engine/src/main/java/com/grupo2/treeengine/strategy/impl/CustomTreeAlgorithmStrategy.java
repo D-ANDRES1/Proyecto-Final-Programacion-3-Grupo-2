@@ -1,169 +1,406 @@
 package com.grupo2.treeengine.strategy.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import com.grupo2.treeengine.core.TreeNode;
 import com.grupo2.treeengine.domain.Node;
 import com.grupo2.treeengine.domain.TreeView;
 import com.grupo2.treeengine.strategy.ITreeAlgorithmStrategy;
 
-public class CustomTreeAlgorithmStrategy implements ITreeAlgorithmStrategy {
-	
-	private TreeNode root; // ✅ el árbol en memoria
-	private final Map<UUID, TreeNode> nodeMap = new HashMap<>();
+public class CustomTreeAlgorithmStrategy
+        implements ITreeAlgorithmStrategy {
+
+    // =====================================================
+    // CREATE OPERATIONS
+    // =====================================================
 
     @Override
-    public Node createRoot(Node value) {
-        // La estrategia solo define lógica de árbol, no genera treeId
-        root = new TreeNode(null, value.getValue(), null);
+    public Node createRoot(Node node) {
 
-        return new Node(
-            null,             // id: lo genera la BD
-            value.getValue(),
-            null,             // parentId: es raíz
-            null              // treeId: lo asigna JpaPersistenceStrategy
-        );
+        UUID nodeId = UUID.randomUUID();
+
+        UUID treeId = UUID.randomUUID();
+
+        node.setId(nodeId);
+
+        node.setTreeId(treeId);
+
+        node.setParentId(null);
+
+        return node;
     }
 
     @Override
-    public Node addChild(UUID parentId, Node value) {
-        // TODO: buscar el padre en el árbol en memoria y agregar hijo
-        return new Node(
-            null,
-            value.getValue(),
-            parentId,
-            null  // treeId: lo asigna JpaPersistenceStrategy del padre
-        );
+    public Node addChild(
+            UUID parentId,
+            Node node,
+            UUID treeId
+    ) {
+
+        node.setId(UUID.randomUUID());
+
+        node.setParentId(parentId);
+
+        node.setTreeId(treeId);
+
+        return node;
     }
 
+    // =====================================================
+    // TREE BUILDING
+    // =====================================================
+
     @Override
-    public TreeView getTree() {
-        if (root == null) return null;
+    public TreeView buildTree(List<Node> nodes) {
+
+        TreeNode root = buildInternalTree(nodes);
+
+        if (root == null) {
+            return null;
+        }
+
         return toTreeView(root);
     }
 
     @Override
-    public TreeView getSubTree(UUID nodeId) {
-        TreeNode node = nodeMap.get(nodeId);
+    public TreeView buildSubTree(UUID nodeId, List<Node> nodes) {
+
+        // ✅ buildInternalTree arma todas las relaciones padre-hijo
+        Map<UUID, TreeNode> map = buildNodeMap(nodes);
+
+        // ✅ asignar hijos igual que buildInternalTree
+        for (Node node : nodes) {
+            if (node.getParentId() != null) {
+                TreeNode parent = map.get(node.getParentId());
+                TreeNode child = map.get(node.getId());
+                if (parent != null && child != null) {
+                    parent.addChild(child);
+                }
+            }
+        }
+
+        TreeNode node = map.get(nodeId);
         if (node == null) return null;
+
         return toTreeView(node);
     }
 
-	@Override
-    public List<Node> getPathToRoot(UUID nodeId) {
-        TreeNode node = nodeMap.get(nodeId);
-        List<Node> path = new ArrayList<>();
-        while (node != null) {
-            path.add(0, toNode(node)); // insertar al inicio → orden raíz primero
-            node = node.getParent();
-        }
-        return path;
-    }
+    // =====================================================
+    // DFS
+    // =====================================================
 
-	@Override
-    public List<Node> dfs() {
-        List<Node> result = new ArrayList<>();
-        if (root != null) dfsHelper(root, result);
+    @Override
+    public List<Node> dfs(List<Node> nodes) {
+
+        List<Node> result =
+                new ArrayList<>();
+
+        TreeNode root =
+                buildInternalTree(nodes);
+
+        if (root == null) {
+            return result;
+        }
+
+        dfsRecursive(root, result);
+
         return result;
     }
-	
-	private void dfsHelper(TreeNode node, List<Node> result) {
-        result.add(toNode(node));
+
+    private void dfsRecursive(
+            TreeNode node,
+            List<Node> result
+    ) {
+
+        result.add(
+                new Node(
+                        node.getId(),
+                        node.getValue(),
+                        node.getParentId(),
+                        null
+                )
+        );
+
         for (TreeNode child : node.getChildren()) {
-            dfsHelper(child, result);
+            dfsRecursive(child, result);
         }
     }
-	
-	@Override
-    public List<Node> bfs() {
-        List<Node> result = new ArrayList<>();
-        if (root == null) return result;
 
-        Queue<TreeNode> queue = new LinkedList<>();
+    // =====================================================
+    // BFS
+    // =====================================================
+
+    @Override
+    public List<Node> bfs(List<Node> nodes) {
+
+        List<Node> result =
+                new ArrayList<>();
+
+        TreeNode root =
+                buildInternalTree(nodes);
+
+        if (root == null) {
+            return result;
+        }
+
+        Queue<TreeNode> queue =
+                new LinkedList<>();
+
         queue.add(root);
 
         while (!queue.isEmpty()) {
-            TreeNode current = queue.poll();
-            result.add(toNode(current));
+
+            TreeNode current =
+                    queue.poll();
+
+            result.add(
+                    new Node(
+                            current.getId(),
+                            current.getValue(),
+                            current.getParentId(),
+                            null
+                    )
+            );
+
             queue.addAll(current.getChildren());
         }
 
         return result;
-    
-
-	@Override
-    public int getHeight() {
-        return heightHelper(root);
     }
-	
-	private int heightHelper(TreeNode node) {
-        if (node == null || node.getChildren().isEmpty()) return 0;
-        int max = 0;
-        for (TreeNode child : node.getChildren()) {
-            max = Math.max(max, heightHelper(child));
+
+    // =====================================================
+    // PATH TO ROOT
+    // =====================================================
+
+    @Override
+    public List<Node> getPathToRoot(
+            UUID nodeId,
+            List<Node> nodes
+    ) {
+
+        Map<UUID, Node> map =
+                nodeMap(nodes);
+
+        List<Node> path =
+                new ArrayList<>();
+
+        Node current = map.get(nodeId);
+
+        while (current != null) {
+
+            path.add(0, current);
+
+            current =
+                    map.get(current.getParentId());
         }
+
+        return path;
+    }
+
+    // =====================================================
+    // ANCESTORS
+    // =====================================================
+
+    @Override
+    public List<Node> getAncestors(
+            UUID nodeId,
+            List<Node> nodes
+    ) {
+
+        List<Node> path =
+                getPathToRoot(nodeId, nodes);
+
+        if (!path.isEmpty()) {
+            path.remove(path.size() - 1);
+        }
+
+        return path;
+    }
+
+    // =====================================================
+    // HEIGHT
+    // =====================================================
+
+    @Override
+    public int getHeight(List<Node> nodes) {
+
+        TreeNode root =
+                buildInternalTree(nodes);
+
+        return height(root);
+    }
+
+    private int height(TreeNode node) {
+
+        if (node == null) {
+            return 0;
+        }
+
+        int max = 0;
+
+        for (TreeNode child : node.getChildren()) {
+
+            max =
+                    Math.max(
+                            max,
+                            height(child)
+                    );
+        }
+
         return max + 1;
     }
 
-	@Override
-    public int getDepth(UUID nodeId) {
-        TreeNode node = nodeMap.get(nodeId);
-        int depth = 0;
-        while (node != null && node.getParent() != null) {
-            depth++;
-            node = node.getParent();
-        }
-        return depth;
+    // =====================================================
+    // DEPTH
+    // =====================================================
+
+    @Override
+    public int getDepth(
+            UUID nodeId,
+            List<Node> nodes
+    ) {
+
+        return getAncestors(
+                nodeId,
+                nodes
+        ).size();
     }
 
-	@Override
-    public List<Node> getAncestors(UUID nodeId) {
-        TreeNode node = nodeMap.get(nodeId);
-        List<Node> ancestors = new ArrayList<>();
-        if (node == null) return ancestors;
+    // =====================================================
+    // VALIDATE CYCLES
+    // =====================================================
 
-        node = node.getParent();
-        while (node != null) {
-            ancestors.add(toNode(node));
-            node = node.getParent();
+    @Override
+    public boolean validateNoCycles(
+            List<Node> nodes
+    ) {
+
+        Map<UUID, Node> map =
+                nodeMap(nodes);
+
+        for (Node node : nodes) {
+
+            Set<UUID> visited =
+                    new HashSet<>();
+
+            Node current = node;
+
+            while (current != null) {
+
+                if (
+                    visited.contains(
+                            current.getId()
+                    )
+                ) {
+                    return false;
+                }
+
+                visited.add(current.getId());
+
+                current =
+                        map.get(
+                                current.getParentId()
+                        );
+            }
         }
-        return ancestors;
-    }
-	@Override
-    public boolean validateNoCycles() {
-        if (root == null) return true;
-        Set<UUID> visited = new HashSet<>();
-        return validateHelper(root, visited);
-    }
-	
-	private boolean validateHelper(TreeNode node, Set<UUID> visited) {
-        if (node.getId() != null) {
-            if (visited.contains(node.getId())) return false;
-            visited.add(node.getId());
-        }
-        for (TreeNode child : node.getChildren()) {
-            if (!validateHelper(child, visited)) return false;
-        }
+
         return true;
     }
-	
-	private TreeView toTreeView(TreeNode node) {
-        TreeView view = new TreeView(node.getId(), node.getValue());
-        for (TreeNode child : node.getChildren()) {
-            view.addChild(toTreeView(child));
+
+    // =====================================================
+    // INTERNAL BUILDERS
+    // =====================================================
+
+    private TreeNode buildInternalTree(
+            List<Node> nodes
+    ) {
+
+        Map<UUID, TreeNode> map =
+                buildNodeMap(nodes);
+
+        TreeNode root = null;
+
+        for (Node node : nodes) {
+
+            TreeNode current =
+                    map.get(node.getId());
+
+            if (node.getParentId() == null) {
+
+                root = current;
+
+            } else {
+
+                TreeNode parent =
+                        map.get(
+                                node.getParentId()
+                        );
+
+                if (parent != null) {
+                    parent.addChild(current);
+                }
+            }
         }
+
+        return root;
+    }
+
+    private Map<UUID, TreeNode> buildNodeMap(
+            List<Node> nodes
+    ) {
+
+        Map<UUID, TreeNode> map =
+                new HashMap<>();
+
+        for (Node node : nodes) {
+
+            map.put(
+                    node.getId(),
+                    new TreeNode(
+                            node.getId(),
+                            node.getValue(),
+                            node.getParentId()
+                    )
+            );
+        }
+
+        return map;
+    }
+
+    private Map<UUID, Node> nodeMap(
+            List<Node> nodes
+    ) {
+
+        Map<UUID, Node> map =
+                new HashMap<>();
+
+        for (Node node : nodes) {
+            map.put(node.getId(), node);
+        }
+
+        return map;
+    }
+
+    // =====================================================
+    // TREE VIEW
+    // =====================================================
+
+    private TreeView toTreeView(
+            TreeNode node
+    ) {
+
+        TreeView view =
+                new TreeView(
+                        node.getId(),
+                        node.getValue()
+                );
+
+        for (TreeNode child : node.getChildren()) {
+            view.addChild(
+                    toTreeView(child)
+            );
+        }
+
         return view;
     }
-
-    private Node toNode(TreeNode node) {
-        UUID parentId = node.getParent() != null ? node.getParent().getId() : null;
-        return new Node(node.getId(), node.getValue(), parentId);
-    }
-
 }
