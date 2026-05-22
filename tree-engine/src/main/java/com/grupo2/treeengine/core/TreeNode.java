@@ -5,26 +5,24 @@ import java.util.List;
 import java.util.UUID;
 
 public class TreeNode {
-	
-	//implementacion del nodo del arbol para costume
-	private UUID id;
-    private String value;
-    private List<TreeNode> children = new ArrayList<>();
-    private TreeNode parent;
-    
 
-    public TreeNode(UUID id, String value, TreeNode parent) {
+    private UUID id;
+
+    private String value;
+
+    private UUID parentId;
+
+    private final List<TreeNode> children = new ArrayList<>();
+
+    public TreeNode(
+            UUID id,
+            String value,
+            UUID parentId
+    ) {
         this.id = id;
         this.value = value;
-        this.parent = parent;
+        this.parentId = parentId;
     }
-    
-    public TreeNode(UUID id, String value) {
-        this.id = id;
-        this.value = value;
-        
-    }
-    
 
     public UUID getId() {
         return id;
@@ -34,19 +32,15 @@ public class TreeNode {
         return value;
     }
 
+    public UUID getParentId() {
+        return parentId;
+    }
+
     public List<TreeNode> getChildren() {
         return children;
     }
-    
-    public TreeNode getParent() {
-        return parent;
-    }
 
     public void addChild(TreeNode child) {
-        this.children.add(child);
+        children.add(child);
     }
-
-	public void setParent(TreeNode parent2) {
-		this.parent = parent ;
-	}
 }

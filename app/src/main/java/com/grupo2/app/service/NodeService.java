@@ -1,116 +1,131 @@
 package com.grupo2.app.service;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.stereotype.Service;
-
 import com.grupo2.app.mapper.api.NodeApiMapper;
+import com.grupo2.app.mapper.api.TreeViewApiMapper;
 import com.grupo2.app.model.AddChildRequest;
 import com.grupo2.app.model.CreateRootRequest;
 import com.grupo2.app.model.NodeResponse;
+import com.grupo2.app.model.TreeResponse;
 import com.grupo2.app.persistence.strategy.PersistenceStrategy;
 import com.grupo2.treeengine.domain.Node;
-import com.grupo2.treeengine.domain.TreeView;
 import com.grupo2.treeengine.service.TreeService;
+
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class NodeService {
 
     private final TreeService treeService;
+
     private final NodeApiMapper mapper;
+    
+    private final TreeViewApiMapper treeViewMapper;
+    
     private final PersistenceStrategy persistence;
 
     public NodeService(
             TreeService treeService,
             NodeApiMapper mapper,
-            PersistenceStrategy persistence
+            PersistenceStrategy persistence,
+            TreeViewApiMapper treeViewMapper
     ) {
         this.treeService = treeService;
         this.mapper = mapper;
         this.persistence = persistence;
+        this.treeViewMapper = treeViewMapper;
     }
 
     // =========================
-    // 1. CREATE ROOT
+    // CREATE ROOT
     // =========================
+
     public NodeResponse createRoot(CreateRootRequest request) {
+
         Node domainNode = mapper.toDomain(request);
+
         Node computedNode = treeService.createRoot(domainNode);
+
         Node savedNode = persistence.save(computedNode);
+
         return mapper.toResponse(savedNode);
     }
 
     // =========================
-    // 2. ADD CHILD
+    // ADD CHILD
     // =========================
-    public NodeResponse addChild(UUID parentId, AddChildRequest request) {
+
+    public NodeResponse addChild(
+            UUID parentId,
+            AddChildRequest request
+    ) {
+
+        Node parent = persistence.findById(parentId)
+                .orElseThrow(() ->
+                        new RuntimeException("Parent not found"));
+
         Node domainNode = mapper.toDomain(request);
-        Node computedNode = treeService.addChild(parentId, domainNode);
-        Node savedNode = persistence.save(computedNode);
+
+        Node computedNode =
+                treeService.addChild(
+                        parentId,
+                        domainNode,
+                        parent.getTreeId()
+                );
+
+        Node savedNode =
+                persistence.save(computedNode);
+
         return mapper.toResponse(savedNode);
     }
+    
+ // =====================================================
+    // GET TREE
+    // =====================================================
 
-    // =========================
-    // 3. GET FULL TREE
-    // =========================
-    public TreeView getTree() {
-        return treeService.getTree();
+    public List<TreeResponse> getTrees() {
+
+        List<Node> roots =
+                persistence.findRoots();
+
+        return roots.stream()
+                .map(root -> {
+
+                    List<Node> nodes =
+                            persistence.findAllByTreeId(
+                                    root.getTreeId()
+                            );
+
+                    return treeViewMapper.toResponse(
+                            treeService.buildTree(nodes)
+                    );
+                })
+                .toList();
     }
 
-    // =========================
-    // 4. GET SUBTREE
-    // =========================
-    public TreeView getSubTree(UUID nodeId) {
-        return treeService.getSubTree(nodeId);
-    }
+    // =====================================================
+    // GET SUBTREE
+    // =====================================================
 
-    // =========================
-    // 5. GET PATH TO ROOT
-    // =========================
-    public List<Node> getPathToRoot(UUID nodeId) {
-        return treeService.getPathToRoot(nodeId);
-    }
+    public TreeResponse getSubTree(UUID nodeId) {
 
-    // =========================
-    // 6. DFS TRAVERSAL
-    // =========================
-    public List<Node> dfs() {
-        return treeService.dfs();
-    }
+        Node node = persistence.findById(nodeId)
+                .orElseThrow(() ->
+                        new RuntimeException("Node not found"));
 
-    // =========================
-    // 7. BFS TRAVERSAL
-    // =========================
-    public List<Node> bfs() {
-        return treeService.bfs();
-    }
+        List<Node> nodes =
+                persistence.findAllByTreeId(
+                        node.getTreeId()
+                );
 
-    // =========================
-    // 8. GET HEIGHT
-    // =========================
-    public int getHeight() {
-        return treeService.getHeight();
+        return treeViewMapper.toResponse(
+                treeService.buildSubTree(
+                        nodeId,
+                        nodes
+                )
+        );
     }
-
-    // =========================
-    // 9. GET DEPTH
-    // =========================
-    public int getDepth(UUID nodeId) {
-        return treeService.getDepth(nodeId);
-    }
-
-    // =========================
-    // 10. GET ANCESTORS
-    // =========================
-    public List<Node> getAncestors(UUID nodeId) {
-        return treeService.getAncestors(nodeId);
-    }
-
-    // =========================
-    // 11. VALIDATE NO CYCLES
-    // =========================
-    public boolean validateNoCycles() {
-        return treeService.validateNoCycles();
-    }
+    
 }

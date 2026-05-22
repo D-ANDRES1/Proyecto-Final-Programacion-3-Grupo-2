@@ -13,6 +13,10 @@ public class TreeViewApiMapper {
 
     public TreeResponse toResponse(TreeView treeView) {
 
+        if (treeView == null) {
+            return null;
+        }
+
         TreeResponse response = new TreeResponse();
 
         response.setId(treeView.getId());
@@ -22,7 +26,10 @@ public class TreeViewApiMapper {
         List<TreeResponse> children = new ArrayList<>();
 
         for (TreeView child : treeView.getChildren()) {
-            children.add(toResponse(child));
+
+            children.add(
+                    toResponse(child)
+            );
         }
 
         response.setChildren(children);
