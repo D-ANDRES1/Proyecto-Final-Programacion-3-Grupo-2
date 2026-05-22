@@ -1,9 +1,9 @@
 package com.grupo2.app.mapper.persistence;
 
+import org.springframework.stereotype.Component;
+
 import com.grupo2.app.model.MongoNode;
 import com.grupo2.treeengine.domain.Node;
-
-import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
@@ -14,46 +14,43 @@ public class MongoNodeMapper
     @Override
     public MongoNode toEntity(Node node) {
 
-        MongoNode mongoNode = new MongoNode();
+        MongoNode mongo = new MongoNode();
 
-        // Mongo usa String
-        if (node.getId() != null) {
-            mongoNode.setId(node.getId().toString());
-        }
+        mongo.setId(
+                node.getId().toString()
+        );
 
-        mongoNode.setValue(node.getValue());
+        mongo.setValue(
+                node.getValue()
+        );
 
-        if (node.getParentId() != null) {
-            mongoNode.setParentId(node.getParentId().toString());
-        }
+        mongo.setParentId(
+                node.getParentId() != null
+                        ? node.getParentId().toString()
+                        : null
+        );
 
-        if (node.getTreeId() != null) {
-            mongoNode.setTreeId(node.getTreeId().toString());
-        }
+        mongo.setTreeId(
+                node.getTreeId() != null
+                        ? node.getTreeId().toString()
+                        : null
+        );
 
-        return mongoNode;
+        return mongo;
     }
 
     @Override
-    public Node toDomain(MongoNode mongoNode) {
-
-        UUID id = mongoNode.getId() != null
-                ? UUID.fromString(mongoNode.getId())
-                : null;
-
-        UUID parentId = mongoNode.getParentId() != null
-                ? UUID.fromString(mongoNode.getParentId())
-                : null;
-
-        UUID treeId = mongoNode.getTreeId() != null
-                ? UUID.fromString(mongoNode.getTreeId())
-                : null;
+    public Node toDomain(MongoNode mongo) {
 
         return new Node(
-                id,
-                mongoNode.getValue(),
-                parentId,
-                treeId
+                UUID.fromString(mongo.getId()),
+                mongo.getValue(),
+                mongo.getParentId() != null
+                        ? UUID.fromString(mongo.getParentId())
+                        : null,
+                mongo.getTreeId() != null
+                        ? UUID.fromString(mongo.getTreeId())
+                        : null
         );
     }
 }

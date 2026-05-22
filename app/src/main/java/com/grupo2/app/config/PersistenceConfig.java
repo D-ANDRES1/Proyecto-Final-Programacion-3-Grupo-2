@@ -30,12 +30,17 @@ public class PersistenceConfig {
         return new JpaPersistenceStrategy(repository, mapper, treeRepository);
     }
 
+	// =====================================================
+    // FALLBACK SEGURO (IMPORTANTE)
+    // =====================================================
+	// ✅ Falla rápido con mensaje claro
 	@Bean
-    @Primary
-    @ConditionalOnMissingBean(PersistenceStrategy.class)
-    public PersistenceStrategy defaultPersistence() {
-        throw new IllegalStateException("No persistence.type configured");
-    }
+	@ConditionalOnMissingBean(PersistenceStrategy.class)
+	public PersistenceStrategy defaultPersistenceStrategy() {
+	    throw new IllegalStateException(
+	        "No persistence strategy configured. Set app.persistence.type=h2 or app.persistence.type=mongo"
+	    );
+	}
 	// FUTURO MONGO
     /*
     @Bean

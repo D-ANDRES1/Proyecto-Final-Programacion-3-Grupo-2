@@ -10,15 +10,18 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class MongoPersistenceStrategy implements PersistenceStrategy {
+public class MongoPersistenceStrategy
+        implements PersistenceStrategy {
 
     private final MongoNodeRepository repository;
+
     private final MongoNodeMapper mapper;
 
     public MongoPersistenceStrategy(
             MongoNodeRepository repository,
             MongoNodeMapper mapper
     ) {
+
         this.repository = repository;
         this.mapper = mapper;
     }
@@ -26,11 +29,13 @@ public class MongoPersistenceStrategy implements PersistenceStrategy {
     @Override
     public Node save(Node node) {
 
-        MongoNode mongoNode = mapper.toEntity(node);
+        MongoNode entity =
+                mapper.toEntity(node);
 
-        MongoNode savedNode = repository.save(mongoNode);
+        MongoNode saved =
+                repository.save(entity);
 
-        return mapper.toDomain(savedNode);
+        return mapper.toDomain(saved);
     }
 
     @Override
@@ -41,9 +46,13 @@ public class MongoPersistenceStrategy implements PersistenceStrategy {
     }
 
     @Override
-    public List<Node> findChildren(UUID parentId) {
+    public List<Node> findChildren(
+            UUID parentId
+    ) {
 
-        return repository.findByParentId(parentId.toString())
+        return repository.findByParentId(
+                        parentId.toString()
+                )
                 .stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
@@ -59,14 +68,23 @@ public class MongoPersistenceStrategy implements PersistenceStrategy {
     }
 
     @Override
-    public List<Node> findAllByTreeId(UUID treeId) {
+    public List<Node> findAllByTreeId(
+            UUID treeId
+    ) {
+
+        return repository.findByTreeId(
+                        treeId.toString()
+                )
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Node> findAll() {
 
         return repository.findAll()
                 .stream()
-                .filter(node ->
-                        node.getTreeId() != null
-                        && node.getTreeId().equals(treeId.toString())
-                )
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
