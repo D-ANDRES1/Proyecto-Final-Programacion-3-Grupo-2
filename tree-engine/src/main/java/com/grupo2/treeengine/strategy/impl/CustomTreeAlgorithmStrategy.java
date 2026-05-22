@@ -1,18 +1,6 @@
 package com.grupo2.treeengine.strategy.impl;
 
-<<<<<<< HEAD
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.UUID;
-=======
 import java.util.*;
->>>>>>> 1d4823456d931916eaacb1ec149b7d25e07b30f9
 
 import com.grupo2.treeengine.core.TreeNode;
 import com.grupo2.treeengine.domain.Node;
@@ -178,15 +166,6 @@ public class CustomTreeAlgorithmStrategy
         }
 
         return result;
-<<<<<<< HEAD
-	}
-    
-
-	@Override
-    public int getHeight() {
-        return heightHelper(root);
-=======
->>>>>>> 1d4823456d931916eaacb1ec149b7d25e07b30f9
     }
 
     // =====================================================

@@ -26,6 +26,9 @@ public class CollectionsTreeAlgorithmStrategy implements ITreeAlgorithmStrategy 
         if (node.getId() == null) {
             node.setId(UUID.randomUUID());
         }
+        if (node.getTreeId() == null) {  
+            node.setTreeId(UUID.randomUUID());
+        }
         node.setParentId(null);
         return node;
     }
