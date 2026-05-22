@@ -41,6 +41,20 @@ public class PersistenceConfig {
 	        "No persistence strategy configured. Set app.persistence.type=h2 or app.persistence.type=mongo"
 	    );
 	}
+	
+	@Bean
+    @ConditionalOnProperty(
+        name = "app.persistence.type",
+        havingValue = "postgres"
+    )
+    public PersistenceStrategy postgresPersistenceStrategy(
+            NodeRepository repository,
+            TreeRepository treeRepository,
+            JpaNodeMapper mapper
+    ) {
+        return new JpaPersistenceStrategy(repository, mapper, treeRepository);
+    }
+	
 	// FUTURO MONGO
     /*
     @Bean

@@ -9,6 +9,7 @@ import com.grupo2.app.persistence.strategy.MongoPersistenceStrategy;
 import com.grupo2.app.persistence.strategy.PersistenceStrategy;
 import com.grupo2.treeengine.service.TreeService;
 import com.grupo2.treeengine.strategy.ITreeAlgorithmStrategy;
+import com.grupo2.treeengine.strategy.impl.CollectionsTreeAlgorithmStrategy;
 import com.grupo2.treeengine.strategy.impl.CustomTreeAlgorithmStrategy;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -23,6 +24,14 @@ public class TreeStrategyConfig {
 			havingValue = "custom")
 	public ITreeAlgorithmStrategy customStrategy() {
 		return new CustomTreeAlgorithmStrategy();
+	}
+	
+	@Bean
+	@ConditionalOnProperty(
+	        name = "app.tree.strategy",
+	        havingValue = "collections")
+	public ITreeAlgorithmStrategy collectionsStrategy() {
+	    return new CollectionsTreeAlgorithmStrategy();
 	}
 	
     @Bean
