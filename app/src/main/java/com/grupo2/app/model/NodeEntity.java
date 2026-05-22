@@ -10,7 +10,6 @@ import jakarta.validation.constraints.*;
 public class NodeEntity {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "node_value", length = 255, nullable = false)
@@ -64,4 +63,9 @@ public class NodeEntity {
     public void setChildren(java.util.List<NodeEntity> children) {
         this.children = children;
     }
+
+	public void setId(UUID id) {
+		// TODO Auto-generated method stub
+		this.id =id;
+	}
 }

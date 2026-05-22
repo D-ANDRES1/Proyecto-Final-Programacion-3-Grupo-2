@@ -3,8 +3,7 @@ package com.grupo2.app.model;
 import java.util.UUID;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -13,7 +12,7 @@ import jakarta.persistence.Table;
 public class TreeEntity {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
+	
     private UUID id;
 	
 
@@ -30,6 +29,22 @@ public class TreeEntity {
 	
 	public void setId(UUID id) {
 		this.id = id;
+	}
+
+	public String getComputerName() {
+		return computerName;
+	}
+
+	public void setComputerName(String computerName) {
+		this.computerName = computerName;
+	}
+
+	public String getManufacturer() {
+		return manufacturer;
+	}
+
+	public void setManufacturer(String manufacturer) {
+		this.manufacturer = manufacturer;
 	}
 
 }

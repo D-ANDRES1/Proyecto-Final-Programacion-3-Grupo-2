@@ -29,5 +29,7 @@ public interface NodeRepository extends JpaRepository<NodeEntity, UUID> {
     /**
      * Buscar el nodo raíz (opcional)
      */
-    Optional<NodeEntity> findByParentIdIsNull();
+    List<NodeEntity> findByParentIdIsNull();
+    
+    List<NodeEntity> findByTree_Id(UUID treeId);
 }

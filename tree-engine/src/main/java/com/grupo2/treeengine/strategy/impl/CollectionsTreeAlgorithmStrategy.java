@@ -11,239 +11,356 @@ import java.util.*;
 
 public class CollectionsTreeAlgorithmStrategy implements ITreeAlgorithmStrategy {
 
-    // TreeMap: almacena UUID → Node (ordenado por UUID)
-    private final TreeMap<UUID, Node> nodes = new TreeMap<>();
+    /**
+     * NO hay estado interno.
+     * Todos los métodos reciben List<Node> como parámetro.
+     */
 
-    // TreeMap: almacena parentId → lista de hijos UUID
-    private final TreeMap<UUID, List<UUID>> childrenMap = new TreeMap<>();
+    // =====================================================
+    // CREATE OPERATIONS
+    // =====================================================
 
-    // ID de la raíz
-    private UUID rootId = null;
-
-    // =====================
-    // CREATE ROOT
-    // =====================
     @Override
-    public Node createRoot(Node domainNode) {
-        if (rootId != null) {
-            throw new RootAlreadyExistsException();
+    public Node createRoot(Node node) {
+        // Solo genera UUID si no lo tiene
+        if (node.getId() == null) {
+            node.setId(UUID.randomUUID());
+        }
+        node.setParentId(null);
+        return node;
+    }
+
+    @Override
+    public Node addChild(UUID parentId, Node node, UUID treeId) {
+        // Solo genera UUID y setea parentId
+        if (node.getId() == null) {
+            node.setId(UUID.randomUUID());
+        }
+        node.setParentId(parentId);
+        node.setTreeId(treeId);
+        return node;
+    }
+
+    // =====================================================
+    // TREE BUILDING - Construye TreeView desde List<Node>
+    // =====================================================
+
+    @Override
+    public TreeView buildTree(List<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return null;
         }
 
-        UUID id = UUID.randomUUID();
-        domainNode.setId(id);
-        domainNode.setParentId(null);
+        // Encuentra la raíz (el nodo sin padre)
+        Node rootNode = nodes.stream()
+                .filter(n -> n.getParentId() == null)
+                .findFirst()
+                .orElse(null);
 
-        nodes.put(id, domainNode);
-        childrenMap.put(id, new ArrayList<>());
-        rootId = id;
-
-        return domainNode;
-    }
-
-    // =====================
-    // ADD CHILD
-    // =====================
-    @Override
-    public Node addChild(UUID parentId, Node domainNode) {
-        if (!nodes.containsKey(parentId)) {
-            throw new NodeNotFoundException(parentId.toString());
+        if (rootNode == null) {
+            return null;
         }
 
-        UUID id = UUID.randomUUID();
-        domainNode.setId(id);
-        domainNode.setParentId(parentId);
-
-        nodes.put(id, domainNode);
-        childrenMap.computeIfAbsent(parentId, k -> new ArrayList<>()).add(id);
-        childrenMap.put(id, new ArrayList<>());
-
-        return domainNode;
+        return buildTreeViewRecursive(rootNode, nodes);
     }
 
-    // =====================
-    // GET TREE (completo)
-    // =====================
     @Override
-    public TreeView getTree() {
-        if (rootId == null) return null;
-        return buildTreeView(rootId);
-    }
-
-    // =====================
-    // GET SUBTREE
-    // =====================
-    @Override
-    public TreeView getSubTree(UUID nodeId) {
-        if (!nodes.containsKey(nodeId)) {
+    public TreeView buildSubTree(UUID nodeId, List<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
             throw new NodeNotFoundException(nodeId.toString());
         }
-        return buildTreeView(nodeId);
+
+        // Encuentra el nodo raíz del subarbol
+        Node subRootNode = nodes.stream()
+                .filter(n -> n.getId().equals(nodeId))
+                .findFirst()
+                .orElseThrow(() -> 
+                        new NodeNotFoundException(nodeId.toString()));
+
+        return buildTreeViewRecursive(subRootNode, nodes);
     }
 
-    // Construye TreeView recursivo desde un nodo
-    private TreeView buildTreeView(UUID nodeId) {
-        Node node = nodes.get(nodeId);
+    /**
+     * Construye TreeView recursivamente desde un nodo.
+     * Busca los hijos en la lista de nodos.
+     */
+    private TreeView buildTreeViewRecursive(Node node, List<Node> allNodes) {
         TreeView view = new TreeView(node.getId(), node.getValue());
 
-        for (UUID childId : childrenMap.getOrDefault(nodeId, new ArrayList<>())) {
-            view.addChild(buildTreeView(childId));
+        // Encuentra todos los hijos de este nodo
+        List<Node> children = allNodes.stream()
+                .filter(n -> node.getId().equals(n.getParentId()))
+                .toList();
+
+        // Construye recursivamente los hijos
+        for (Node child : children) {
+            view.addChild(buildTreeViewRecursive(child, allNodes));
         }
+
         return view;
     }
 
-    // =====================
-    // GET PATH TO ROOT
-    // =====================
+    // =====================================================
+    // TRAVERSALS - Usa List<Node> directamente
+    // =====================================================
+
     @Override
-    public List<Node> getPathToRoot(UUID nodeId) {
-        if (!nodes.containsKey(nodeId)) {
+    public List<Node> dfs(List<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Node> result = new ArrayList<>();
+        
+        // Encuentra la raíz
+        Node root = nodes.stream()
+                .filter(n -> n.getParentId() == null)
+                .findFirst()
+                .orElse(null);
+
+        if (root == null) {
+            return new ArrayList<>();
+        }
+
+        // DFS con pila (ArrayDeque)
+        ArrayDeque<UUID> stack = new ArrayDeque<>();
+        stack.push(root.getId());
+
+        while (!stack.isEmpty()) {
+            UUID currentId = stack.pop();
+            Node currentNode = findNodeById(currentId, nodes);
+
+            if (currentNode != null) {
+                result.add(currentNode);
+
+                // Agrega hijos en orden inverso (para mantener orden)
+                List<Node> children = nodes.stream()
+                        .filter(n -> currentId.equals(n.getParentId()))
+                        .sorted(Comparator.comparing(Node::getId).reversed())
+                        .toList();
+
+                for (Node child : children) {
+                    stack.push(child.getId());
+                }
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Node> bfs(List<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Node> result = new ArrayList<>();
+        
+        // Encuentra la raíz
+        Node root = nodes.stream()
+                .filter(n -> n.getParentId() == null)
+                .findFirst()
+                .orElse(null);
+
+        if (root == null) {
+            return new ArrayList<>();
+        }
+
+        // BFS con cola (ArrayDeque)
+        ArrayDeque<UUID> queue = new ArrayDeque<>();
+        queue.add(root.getId());
+
+        while (!queue.isEmpty()) {
+            UUID currentId = queue.poll();
+            Node currentNode = findNodeById(currentId, nodes);
+
+            if (currentNode != null) {
+                result.add(currentNode);
+
+                // Agrega hijos a la cola
+                List<Node> children = nodes.stream()
+                        .filter(n -> currentId.equals(n.getParentId()))
+                        .toList();
+
+                for (Node child : children) {
+                    queue.add(child.getId());
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // =====================================================
+    // QUERIES - Reciben List<Node> como parámetro
+    // =====================================================
+
+    @Override
+    public List<Node> getPathToRoot(UUID nodeId, List<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
             throw new NodeNotFoundException(nodeId.toString());
         }
 
         List<Node> path = new ArrayList<>();
-        UUID current = nodeId;
+        Node current = findNodeById(nodeId, nodes);
 
-        while (current != null) {
-            path.add(nodes.get(current));
-            Node currentNode = nodes.get(current);
-            current = currentNode.getParentId();
-        }
-        return path;
-    }
-
-    // =====================
-    // DFS
-    // =====================
-    @Override
-    public List<Node> dfs() {
-        List<Node> result = new ArrayList<>();
-        if (rootId == null) return result;
-
-        // ArrayDeque como pila (stack) para DFS
-        ArrayDeque<UUID> stack = new ArrayDeque<>();
-        stack.push(rootId);
-
-        while (!stack.isEmpty()) {
-            UUID nodeId = stack.pop();
-            result.add(nodes.get(nodeId));
-
-            List<UUID> children = childrenMap.getOrDefault(nodeId, new ArrayList<>());
-            // Invertimos para mantener orden correcto
-            for (int i = children.size() - 1; i >= 0; i--) {
-                stack.push(children.get(i));
-            }
-        }
-        return result;
-    }
-
-    // =====================
-    // BFS
-    // =====================
-    @Override
-    public List<Node> bfs() {
-        List<Node> result = new ArrayList<>();
-        if (rootId == null) return result;
-
-        // ArrayDeque como cola (queue) para BFS
-        ArrayDeque<UUID> queue = new ArrayDeque<>();
-        queue.add(rootId);
-
-        while (!queue.isEmpty()) {
-            UUID nodeId = queue.poll();
-            result.add(nodes.get(nodeId));
-
-            List<UUID> children = childrenMap.getOrDefault(nodeId, new ArrayList<>());
-            queue.addAll(children);
-        }
-        return result;
-    }
-
-    // =====================
-    // GET HEIGHT
-    // =====================
-    @Override
-    public int getHeight() {
-        if (rootId == null) return 0;
-        return calculateHeight(rootId);
-    }
-
-    private int calculateHeight(UUID nodeId) {
-        List<UUID> children = childrenMap.getOrDefault(nodeId, new ArrayList<>());
-        if (children.isEmpty()) return 1;
-
-        int maxHeight = 0;
-        for (UUID childId : children) {
-            maxHeight = Math.max(maxHeight, calculateHeight(childId));
-        }
-        return maxHeight + 1;
-    }
-
-    // =====================
-    // GET DEPTH
-    // =====================
-    @Override
-    public int getDepth(UUID nodeId) {
-        if (!nodes.containsKey(nodeId)) {
+        if (current == null) {
             throw new NodeNotFoundException(nodeId.toString());
         }
 
-        int depth = 0;
-        UUID current = nodeId;
-
-        while (nodes.get(current).getParentId() != null) {
-            current = nodes.get(current).getParentId();
-            depth++;
+        // Sube hasta la raíz
+        while (current != null) {
+            path.add(current);
+            current = current.getParentId() != null
+                    ? findNodeById(current.getParentId(), nodes)
+                    : null;
         }
-        return depth;
+
+        return path;
     }
 
-    // =====================
-    // GET ANCESTORS
-    // =====================
     @Override
-    public List<Node> getAncestors(UUID nodeId) {
-        if (!nodes.containsKey(nodeId)) {
+    public List<Node> getAncestors(UUID nodeId, List<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
             throw new NodeNotFoundException(nodeId.toString());
         }
 
         List<Node> ancestors = new ArrayList<>();
-        UUID current = nodes.get(nodeId).getParentId();
+        Node current = findNodeById(nodeId, nodes);
 
-        while (current != null) {
-            ancestors.add(nodes.get(current));
-            current = nodes.get(current).getParentId();
+        if (current == null) {
+            throw new NodeNotFoundException(nodeId.toString());
         }
+
+        // Sube por los padres (sin incluir el nodo mismo)
+        UUID parentId = current.getParentId();
+        while (parentId != null) {
+            Node parent = findNodeById(parentId, nodes);
+            if (parent != null) {
+                ancestors.add(parent);
+                parentId = parent.getParentId();
+            } else {
+                break;
+            }
+        }
+
         return ancestors;
     }
 
-    // =====================
-    // VALIDATE NO CYCLES
-    // =====================
     @Override
-    public boolean validateNoCycles() {
+    public int getHeight(List<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return 0;
+        }
+
+        Node root = nodes.stream()
+                .filter(n -> n.getParentId() == null)
+                .findFirst()
+                .orElse(null);
+
+        if (root == null) {
+            return 0;
+        }
+
+        return calculateHeight(root, nodes);
+    }
+
+    private int calculateHeight(Node node, List<Node> allNodes) {
+        List<Node> children = allNodes.stream()
+                .filter(n -> node.getId().equals(n.getParentId()))
+                .toList();
+
+        if (children.isEmpty()) {
+            return 1;
+        }
+
+        int maxHeight = 0;
+        for (Node child : children) {
+            maxHeight = Math.max(maxHeight, calculateHeight(child, allNodes));
+        }
+        return maxHeight + 1;
+    }
+
+    @Override
+    public int getDepth(UUID nodeId, List<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            throw new NodeNotFoundException(nodeId.toString());
+        }
+
+        Node node = findNodeById(nodeId, nodes);
+        if (node == null) {
+            throw new NodeNotFoundException(nodeId.toString());
+        }
+
+        int depth = 0;
+        UUID currentId = node.getParentId();
+
+        while (currentId != null) {
+            depth++;
+            Node parent = findNodeById(currentId, nodes);
+            if (parent != null) {
+                currentId = parent.getParentId();
+            } else {
+                break;
+            }
+        }
+
+        return depth;
+    }
+
+    @Override
+    public boolean validateNoCycles(List<Node> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return true;
+        }
+
         Set<UUID> visited = new HashSet<>();
         Set<UUID> inStack = new HashSet<>();
 
-        for (UUID nodeId : nodes.keySet()) {
-            if (detectCycle(nodeId, visited, inStack)) {
-                throw new CycleDetectedException("Ciclo detectado en nodo: " + nodeId);
+        for (Node node : nodes) {
+            if (detectCycle(node.getId(), nodes, visited, inStack)) {
+                throw new CycleDetectedException(
+                        "Ciclo detectado en nodo: " + node.getId());
             }
         }
         return true;
     }
 
-    private boolean detectCycle(UUID nodeId, Set<UUID> visited, Set<UUID> inStack) {
-        if (inStack.contains(nodeId)) return true;
-        if (visited.contains(nodeId)) return false;
+    private boolean detectCycle(UUID nodeId, List<Node> allNodes,
+                                Set<UUID> visited, Set<UUID> inStack) {
+        if (inStack.contains(nodeId)) {
+            return true;
+        }
+        if (visited.contains(nodeId)) {
+            return false;
+        }
 
         visited.add(nodeId);
         inStack.add(nodeId);
 
-        for (UUID childId : childrenMap.getOrDefault(nodeId, new ArrayList<>())) {
-            if (detectCycle(childId, visited, inStack)) return true;
+        // Busca los hijos
+        List<Node> children = allNodes.stream()
+                .filter(n -> nodeId.equals(n.getParentId()))
+                .toList();
+
+        for (Node child : children) {
+            if (detectCycle(child.getId(), allNodes, visited, inStack)) {
+                return true;
+            }
         }
 
         inStack.remove(nodeId);
         return false;
+    }
+
+    // =====================================================
+    // HELPER METHODS
+    // =====================================================
+
+    private Node findNodeById(UUID id, List<Node> nodes) {
+        return nodes.stream()
+                .filter(n -> n.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 }
