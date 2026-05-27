@@ -70,10 +70,9 @@ public class JpaPersistenceStrategy implements PersistenceStrategy {
 
     @Override
     public List<Node> findRoots() {
-
-        return repository.findByParentIdIsNull()
+        return repository.findByParentIdIsNull()  // ✅ Devuelve List<NodeEntity>
                 .stream()
-                .map(mapper::toDomain)
+                .map(mapper::toDomain)            // ✅ mapper.toDomain(NodeEntity) funciona
                 .collect(Collectors.toList());
     }
 
@@ -94,8 +93,7 @@ public class JpaPersistenceStrategy implements PersistenceStrategy {
     
     @Override
     public List<Node> findAll() {
-
-        return repository.findAll()
+        return repository.findAll()  // ✅ Heredado de JpaRepository<NodeEntity, UUID>
                 .stream()
                 .map(mapper::toDomain)
                 .toList();

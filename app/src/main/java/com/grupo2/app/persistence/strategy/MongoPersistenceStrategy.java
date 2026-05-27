@@ -94,4 +94,5 @@ public class MongoPersistenceStrategy
 
         repository.deleteById(id.toString());
     }
+    
 }

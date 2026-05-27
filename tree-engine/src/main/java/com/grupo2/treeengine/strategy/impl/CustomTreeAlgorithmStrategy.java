@@ -85,88 +85,58 @@ public class CustomTreeAlgorithmStrategy
         return toTreeView(node);
     }
 
-    // =====================================================
-    // DFS
-    // =====================================================
+ // =====================================================
+ // DFS
+ // =====================================================
 
-    @Override
-    public List<Node> dfs(List<Node> nodes) {
+ @Override
+ public List<Node> dfs(List<Node> nodes) {
 
-        List<Node> result =
-                new ArrayList<>();
+     List<Node> result = new ArrayList<>();
+     Map<UUID, Node> originalMap = nodeMap(nodes); // ✅ mapa original
+     TreeNode root = buildInternalTree(nodes);
 
-        TreeNode root =
-                buildInternalTree(nodes);
+     if (root == null) return result;
 
-        if (root == null) {
-            return result;
-        }
+     dfsRecursive(root, result, originalMap);
+     return result;
+ }
 
-        dfsRecursive(root, result);
+ private void dfsRecursive(
+         TreeNode node,
+         List<Node> result,
+         Map<UUID, Node> originalMap
+ ) {
+     result.add(originalMap.get(node.getId())); // ✅ nodo original con treeId
+     for (TreeNode child : node.getChildren()) {
+         dfsRecursive(child, result, originalMap);
+     }
+ }
 
-        return result;
-    }
+ // =====================================================
+ // BFS
+ // =====================================================
 
-    private void dfsRecursive(
-            TreeNode node,
-            List<Node> result
-    ) {
+ @Override
+ public List<Node> bfs(List<Node> nodes) {
 
-        result.add(
-                new Node(
-                        node.getId(),
-                        node.getValue(),
-                        node.getParentId(),
-                        null
-                )
-        );
+     List<Node> result = new ArrayList<>();
+     Map<UUID, Node> originalMap = nodeMap(nodes); // ✅ mapa original
+     TreeNode root = buildInternalTree(nodes);
 
-        for (TreeNode child : node.getChildren()) {
-            dfsRecursive(child, result);
-        }
-    }
+     if (root == null) return result;
 
-    // =====================================================
-    // BFS
-    // =====================================================
+     Queue<TreeNode> queue = new LinkedList<>();
+     queue.add(root);
 
-    @Override
-    public List<Node> bfs(List<Node> nodes) {
+     while (!queue.isEmpty()) {
+         TreeNode current = queue.poll();
+         result.add(originalMap.get(current.getId())); // ✅ nodo original con treeId
+         queue.addAll(current.getChildren());
+     }
 
-        List<Node> result =
-                new ArrayList<>();
-
-        TreeNode root =
-                buildInternalTree(nodes);
-
-        if (root == null) {
-            return result;
-        }
-
-        Queue<TreeNode> queue =
-                new LinkedList<>();
-
-        queue.add(root);
-
-        while (!queue.isEmpty()) {
-
-            TreeNode current =
-                    queue.poll();
-
-            result.add(
-                    new Node(
-                            current.getId(),
-                            current.getValue(),
-                            current.getParentId(),
-                            null
-                    )
-            );
-
-            queue.addAll(current.getChildren());
-        }
-
-        return result;
-    }
+     return result;
+ }
 
     // =====================================================
     // PATH TO ROOT
