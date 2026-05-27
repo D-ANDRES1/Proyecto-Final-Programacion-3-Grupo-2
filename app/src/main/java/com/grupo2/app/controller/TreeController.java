@@ -2,7 +2,8 @@ package com.grupo2.app.controller;
 
 import com.grupo2.app.api.TreeApi;
 import com.grupo2.app.model.HeightResponse;
-import com.grupo2.app.model.ListResponse;
+
+import com.grupo2.app.model.NodeListResponse;
 import com.grupo2.app.model.TreeListResponse;
 import com.grupo2.app.model.TreeResponse;
 import com.grupo2.app.model.ValidationResponse;
@@ -66,10 +67,10 @@ public class TreeController implements TreeApi {
     }
 
     @Override
-    public ResponseEntity<ListResponse> traversal(
-            String type
-    ) {
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<NodeListResponse> traversal(String type) {
+        return ResponseEntity.ok(
+                service.traversal(type)
+        );
     }
 
     @Override

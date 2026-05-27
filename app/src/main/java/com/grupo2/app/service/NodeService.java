@@ -4,6 +4,8 @@ import com.grupo2.app.mapper.api.NodeApiMapper;
 import com.grupo2.app.mapper.api.TreeViewApiMapper;
 import com.grupo2.app.model.AddChildRequest;
 import com.grupo2.app.model.CreateRootRequest;
+import com.grupo2.app.model.DepthResponse;
+import com.grupo2.app.model.NodeListResponse;
 import com.grupo2.app.model.NodeResponse;
 import com.grupo2.app.model.TreeResponse;
 import com.grupo2.app.persistence.strategy.PersistenceStrategy;
@@ -12,6 +14,7 @@ import com.grupo2.treeengine.service.TreeService;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -127,5 +130,118 @@ public class NodeService {
                 )
         );
     }
+
+ // =====================================================
+ // GET DEPTH
+ // =====================================================
+
+ public DepthResponse getDepth(UUID nodeId) {
+
+     Node node = persistence.findById(nodeId)
+             .orElseThrow(() ->
+                     new RuntimeException("Node not found"));
+
+     List<Node> allNodes =
+             persistence.findAllByTreeId(node.getTreeId());
+
+     int depth = treeService.getDepth(nodeId, allNodes);
+
+     DepthResponse response = new DepthResponse();
+     response.setDepth(depth);
+
+     return response;
+ }
+
+ // =====================================================
+ // GET PATH TO ROOT
+ // =====================================================
+
+ public NodeListResponse getPathToRoot(UUID nodeId) {
+
+     Node node = persistence.findById(nodeId)
+             .orElseThrow(() ->
+                     new RuntimeException("Node not found"));
+
+     List<Node> allNodes =
+             persistence.findAllByTreeId(node.getTreeId());
+
+     List<Node> path =
+             treeService.getPathToRoot(nodeId, allNodes);
+
+     NodeListResponse response = new NodeListResponse();
+
+     response.setItems(
+             path.stream()
+                     .map(mapper::toResponse)
+                     .toList()
+     );
+
+     return response;
+ }
+    
+    
+ // =====================================================
+ // GET ANCESTORS
+ // =====================================================
+
+ public NodeListResponse getAncestors(UUID nodeId) {
+
+     Node node = persistence.findById(nodeId)
+             .orElseThrow(() ->
+                     new RuntimeException("Node not found"));
+
+     List<Node> allNodes =
+             persistence.findAllByTreeId(node.getTreeId());
+
+     List<Node> ancestors =
+             treeService.getAncestors(nodeId, allNodes);
+
+     NodeListResponse response = new NodeListResponse();
+
+     response.setItems(
+             ancestors.stream()
+                     .map(mapper::toResponse)
+                     .toList()
+     );
+
+     return response;
+ }
+ 
+ public NodeListResponse traversal(String type) {
+
+	    // ✅ cargar todos los nodos que sí tienen treeId
+	    List<Node> allNodes = persistence.findAll();
+
+	    // ✅ obtener treeIds únicos
+	    List<UUID> treeIds = allNodes.stream()
+	            .map(Node::getTreeId)
+	            .filter(id -> id != null)
+	            .distinct()
+	            .toList();
+
+	    List<Node> result = new ArrayList<>();
+
+	    for (UUID treeId : treeIds) {
+
+	        List<Node> treeNodes = allNodes.stream()
+	                .filter(n -> treeId.equals(n.getTreeId()))
+	                .toList();
+
+	        List<Node> traversed = type.equals("DFS")
+	                ? treeService.dfs(treeNodes)
+	                : treeService.bfs(treeNodes);
+
+	        result.addAll(traversed);
+	    }
+
+	    NodeListResponse response = new NodeListResponse();
+	    response.setItems(
+	            result.stream()
+	                    .map(mapper::toResponse)
+	                    .toList()
+	    );
+
+	    return response;
+	}
     
 }

@@ -29,7 +29,6 @@ paths:
       responses:
         '200':
           description: OK
-
           content:
             application/json:
               schema:
@@ -43,14 +42,11 @@ paths:
     post:
       tags:
         - Nodes
-
       operationId: createRoot
-
       summary: Crear nodo raíz
 
       requestBody:
         required: true
-
         content:
           application/json:
             schema:
@@ -59,7 +55,6 @@ paths:
       responses:
         '201':
           description: Root creado
-
           content:
             application/json:
               schema:
@@ -73,23 +68,19 @@ paths:
     post:
       tags:
         - Nodes
-
       operationId: addChild
-
       summary: Agregar hijo a un nodo
 
       parameters:
         - name: parentId
           in: path
           required: true
-
           schema:
             type: string
             format: uuid
 
       requestBody:
         required: true
-
         content:
           application/json:
             schema:
@@ -98,7 +89,6 @@ paths:
       responses:
         '201':
           description: Hijo agregado
-
           content:
             application/json:
               schema:
@@ -112,15 +102,12 @@ paths:
     get:
       tags:
         - Tree
-
       operationId: getTree
-
       summary: Obtener todos los árboles
 
       responses:
         '200':
           description: OK
-
           content:
             application/json:
               schema:
@@ -134,16 +121,13 @@ paths:
     get:
       tags:
         - Tree
-
       operationId: getSubTree
-
       summary: Obtener subárbol
 
       parameters:
         - name: nodeId
           in: path
           required: true
-
           schema:
             type: string
             format: uuid
@@ -151,7 +135,6 @@ paths:
       responses:
         '200':
           description: OK
-
           content:
             application/json:
               schema:
@@ -165,16 +148,13 @@ paths:
     get:
       tags:
         - Nodes
-
       operationId: getPathToRoot
-
       summary: Ruta desde raíz a nodo
 
       parameters:
         - name: nodeId
           in: path
           required: true
-
           schema:
             type: string
             format: uuid
@@ -182,11 +162,10 @@ paths:
       responses:
         '200':
           description: OK
-
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PathResponse'
+                $ref: '#/components/schemas/NodeListResponse'
 
   # =====================================================
   # TRAVERSAL
@@ -196,16 +175,13 @@ paths:
     get:
       tags:
         - Tree
-
       operationId: traversal
-
       summary: Recorrido DFS/BFS
 
       parameters:
         - name: type
           in: query
           required: true
-
           schema:
             type: string
             enum:
@@ -215,11 +191,10 @@ paths:
       responses:
         '200':
           description: OK
-
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListResponse'
+                $ref: '#/components/schemas/NodeListResponse'
 
   # =====================================================
   # HEIGHT
@@ -229,15 +204,12 @@ paths:
     get:
       tags:
         - Tree
-
       operationId: getHeight
-
       summary: Altura del árbol
 
       responses:
         '200':
           description: OK
-
           content:
             application/json:
               schema:
@@ -251,16 +223,13 @@ paths:
     get:
       tags:
         - Nodes
-
       operationId: getDepth
-
       summary: Profundidad de un nodo
 
       parameters:
         - name: nodeId
           in: path
           required: true
-
           schema:
             type: string
             format: uuid
@@ -268,7 +237,6 @@ paths:
       responses:
         '200':
           description: OK
-
           content:
             application/json:
               schema:
@@ -282,16 +250,13 @@ paths:
     get:
       tags:
         - Nodes
-
       operationId: getAncestors
-
       summary: Ancestros de un nodo
 
       parameters:
         - name: nodeId
           in: path
           required: true
-
           schema:
             type: string
             format: uuid
@@ -299,11 +264,10 @@ paths:
       responses:
         '200':
           description: OK
-
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListResponse'
+                $ref: '#/components/schemas/NodeListResponse'
 
   # =====================================================
   # VALIDATE
@@ -313,15 +277,12 @@ paths:
     get:
       tags:
         - Tree
-
       operationId: validateNoCycles
-
       summary: Validar que no existan ciclos
 
       responses:
         '200':
           description: OK
-
           content:
             application/json:
               schema:
@@ -337,7 +298,6 @@ components:
 
     HealthResponse:
       type: object
-
       properties:
         status:
           type: string
@@ -349,20 +309,16 @@ components:
 
     CreateRootRequest:
       type: object
-
       required:
         - value
-
       properties:
         value:
           type: string
 
     AddChildRequest:
       type: object
-
       required:
         - value
-
       properties:
         value:
           type: string
@@ -373,19 +329,15 @@ components:
 
     NodeResponse:
       type: object
-
       properties:
         id:
           type: string
           format: uuid
-
         value:
           type: string
-
         parentId:
           type: string
           format: uuid
-
         treeId:
           type: string
           format: uuid
@@ -396,18 +348,14 @@ components:
 
     TreeResponse:
       type: object
-
       properties:
         id:
           type: string
           format: uuid
-
         value:
           type: string
-
         children:
           type: array
-
           items:
             $ref: '#/components/schemas/TreeResponse'
 
@@ -417,13 +365,23 @@ components:
 
     TreeListResponse:
       type: object
-
       properties:
         items:
           type: array
-
           items:
             $ref: '#/components/schemas/TreeResponse'
+
+    # =====================================================
+    # NODE LIST RESPONSE
+    # =====================================================
+
+    NodeListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeResponse'
 
     # =====================================================
     # PATH RESPONSE
@@ -431,26 +389,9 @@ components:
 
     PathResponse:
       type: object
-
       properties:
         path:
           type: array
-
-          items:
-            type: string
-            format: uuid
-
-    # =====================================================
-    # GENERIC LIST RESPONSE
-    # =====================================================
-
-    ListResponse:
-      type: object
-
-      properties:
-        items:
-          type: array
-
           items:
             type: string
             format: uuid
@@ -461,7 +402,6 @@ components:
 
     HeightResponse:
       type: object
-
       properties:
         height:
           type: integer
@@ -473,7 +413,6 @@ components:
 
     DepthResponse:
       type: object
-
       properties:
         depth:
           type: integer
@@ -485,7 +424,6 @@ components:
 
     ValidationResponse:
       type: object
-
       properties:
         valid:
           type: boolean
@@ -496,15 +434,12 @@ components:
 
     ErrorResponse:
       type: object
-
       properties:
         timestamp:
           type: string
           format: date-time
-
         code:
           type: string
-
         message:
           type: string
 
@@ -514,11 +449,9 @@ components:
 
     FieldError:
       type: object
-
       properties:
         field:
           type: string
-
         message:
           type: string
 
@@ -528,20 +461,15 @@ components:
 
     ValidationErrorResponse:
       type: object
-
       properties:
         timestamp:
           type: string
           format: date-time
-
         code:
           type: string
-
         message:
           type: string
-
         errors:
           type: array
-
           items:
             $ref: '#/components/schemas/FieldError'

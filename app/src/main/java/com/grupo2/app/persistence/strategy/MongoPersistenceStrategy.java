@@ -95,11 +95,4 @@ public class MongoPersistenceStrategy
         repository.deleteById(id.toString());
     }
     
-    @Override
-    public List<Node> findAll() {
-        return repository.findAll()
-                .stream()
-                .map(mapper::toDomain)
-                .collect(Collectors.toList());
-    }
 }
