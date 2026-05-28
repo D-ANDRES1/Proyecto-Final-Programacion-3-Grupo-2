@@ -89,6 +89,7 @@ public class CollectionsTreeAlgorithmStrategy implements ITreeAlgorithmStrategy 
      */
     private TreeView buildTreeViewRecursive(Node node, List<Node> allNodes) {
         TreeView view = new TreeView(node.getId(), node.getValue());
+        view.setTreeId(node.getTreeId());
 
         // Encuentra todos los hijos de este nodo
         List<Node> children = allNodes.stream()

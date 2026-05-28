@@ -11,12 +11,15 @@ import com.grupo2.app.model.TreeResponse;
 import com.grupo2.app.persistence.strategy.PersistenceStrategy;
 import com.grupo2.treeengine.domain.Node;
 import com.grupo2.treeengine.service.TreeService;
+import com.grupo2.app.model.HeightResponse;
+import com.grupo2.app.model.ValidationResponse;
 
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 
 @Service
 public class NodeService {
@@ -206,6 +209,38 @@ public class NodeService {
 
      return response;
  }
+ 
+//=====================================================
+//GET HEIGHT
+//=====================================================
+
+public HeightResponse getHeight(UUID treeId) {
+
+  List<Node> allNodes = persistence.findAllByTreeId(treeId);
+
+  int height = treeService.getHeight(allNodes);
+
+  HeightResponse response = new HeightResponse();
+  response.setHeight(height);
+
+  return response;
+}
+
+//=====================================================
+//VALIDATE NO CYCLES
+//=====================================================
+
+public ValidationResponse validateNoCycles(UUID treeId) {
+
+  List<Node> allNodes = persistence.findAllByTreeId(treeId);
+
+  boolean valid = treeService.validateNoCycles(allNodes);
+
+  ValidationResponse response = new ValidationResponse();
+  response.setValid(valid);
+
+  return response;
+}
  
  public NodeListResponse traversal(String type) {
 

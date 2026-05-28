@@ -62,8 +62,10 @@ public class TreeController implements TreeApi {
     // =====================================================
 
     @Override
-    public ResponseEntity<HeightResponse> getHeight() {
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<HeightResponse> getHeight(UUID treeId) {
+        return ResponseEntity.ok(
+                service.getHeight(treeId)
+        );
     }
 
     @Override
@@ -74,7 +76,9 @@ public class TreeController implements TreeApi {
     }
 
     @Override
-    public ResponseEntity<ValidationResponse> validateNoCycles() {
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<ValidationResponse> validateNoCycles(UUID treeId) {
+        return ResponseEntity.ok(
+                service.validateNoCycles(treeId)
+        );
     }
 }

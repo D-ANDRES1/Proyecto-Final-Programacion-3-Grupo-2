@@ -206,6 +206,13 @@ paths:
         - Tree
       operationId: getHeight
       summary: Altura del árbol
+      parameters:
+        - name: treeId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
 
       responses:
         '200':
@@ -279,6 +286,13 @@ paths:
         - Tree
       operationId: validateNoCycles
       summary: Validar que no existan ciclos
+      parameters:
+        - name: treeId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
 
       responses:
         '200':
@@ -350,6 +364,9 @@ components:
       type: object
       properties:
         id:
+          type: string
+          format: uuid
+        treeId:
           type: string
           format: uuid
         value:
