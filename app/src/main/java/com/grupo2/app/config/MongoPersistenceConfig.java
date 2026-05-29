@@ -12,17 +12,19 @@ import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import com.grupo2.app.persistence.repository.MongoTreeRepository;
 
 @Configuration
 @ConditionalOnProperty(name = "app.persistence.type", havingValue = "mongo")
 @EnableMongoRepositories(basePackages = "com.grupo2.app.persistence.repository")
 public class MongoPersistenceConfig {
 
-    @Bean
-    public PersistenceStrategy mongoPersistenceStrategy(
-            MongoNodeRepository repository,
-            MongoNodeMapper mapper
-    ) {
-        return new MongoPersistenceStrategy(repository, mapper);
-    }
+	@Bean
+	public PersistenceStrategy mongoPersistenceStrategy(
+	        MongoNodeRepository repository,
+	        MongoNodeMapper mapper,
+	        MongoTreeRepository treeRepository  // ← agregar parámetro
+	) {
+	    return new MongoPersistenceStrategy(repository, mapper, treeRepository); // ← agregar argumento
+	}
 }

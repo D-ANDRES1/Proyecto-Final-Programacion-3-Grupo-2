@@ -98,4 +98,21 @@ public class JpaPersistenceStrategy implements PersistenceStrategy {
                 .map(mapper::toDomain)
                 .toList();
     }
+    
+ // =====================================================
+ // UPDATE TREE
+ // =====================================================
+
+ @Override
+ public void updateTree(UUID treeId, String computerName, String manufacturer) {
+
+     TreeEntity tree = treeRepository.findById(treeId)
+             .orElseThrow(() ->
+                     new RuntimeException("Tree not found: " + treeId));
+
+     tree.setComputerName(computerName);
+     tree.setManufacturer(manufacturer);
+
+     treeRepository.save(tree);
+ }
 }

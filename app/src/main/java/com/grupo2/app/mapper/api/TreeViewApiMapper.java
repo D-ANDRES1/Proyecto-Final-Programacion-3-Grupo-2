@@ -22,6 +22,8 @@ public class TreeViewApiMapper {
         response.setId(treeView.getId());
 
         response.setValue(treeView.getValue());
+        
+        response.setTreeId(treeView.getTreeId()); 
 
         List<TreeResponse> children = new ArrayList<>();
 

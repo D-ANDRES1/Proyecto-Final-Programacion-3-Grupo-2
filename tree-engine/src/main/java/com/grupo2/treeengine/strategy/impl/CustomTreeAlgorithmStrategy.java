@@ -59,7 +59,14 @@ public class CustomTreeAlgorithmStrategy
             return null;
         }
 
-        return toTreeView(root);
+        UUID treeId = null;
+        for (Node n : nodes) {
+            if (n.getParentId() == null) {
+                treeId = n.getTreeId();
+                break;
+            }
+        }
+        return toTreeView(root, treeId); 
     }
 
     @Override
@@ -81,8 +88,12 @@ public class CustomTreeAlgorithmStrategy
 
         TreeNode node = map.get(nodeId);
         if (node == null) return null;
+        
+        Map<UUID, Node> originalMap = nodeMap(nodes);
+        Node originalNode = originalMap.get(nodeId);
+        UUID treeId = originalNode != null ? originalNode.getTreeId() : null;
 
-        return toTreeView(node);
+        return toTreeView(node, treeId);
     }
 
  // =====================================================
@@ -356,7 +367,8 @@ public class CustomTreeAlgorithmStrategy
     // =====================================================
 
     private TreeView toTreeView(
-            TreeNode node
+            TreeNode node,
+            UUID treeId
     ) {
 
         TreeView view =
@@ -364,10 +376,11 @@ public class CustomTreeAlgorithmStrategy
                         node.getId(),
                         node.getValue()
                 );
+        	view.setTreeId(treeId);
 
         for (TreeNode child : node.getChildren()) {
             view.addChild(
-                    toTreeView(child)
+                    toTreeView(child, treeId)
             );
         }
 

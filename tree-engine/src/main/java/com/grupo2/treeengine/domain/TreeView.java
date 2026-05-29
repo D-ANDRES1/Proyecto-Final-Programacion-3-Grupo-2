@@ -12,6 +12,8 @@ public class TreeView {
     private UUID id;
 
     private String value;
+    
+    private UUID treeId;
 
     private List<TreeView> children = new ArrayList<>();
 
@@ -50,4 +52,8 @@ public class TreeView {
     public void addChild(TreeView child) {
         this.children.add(child);
     }
+    
+    public UUID getTreeId() { return treeId; }
+    public void setTreeId(UUID treeId) { this.treeId = treeId; }
+    
 }
