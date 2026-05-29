@@ -12,6 +12,7 @@ import com.grupo2.app.model.TreeResponse;
 import com.grupo2.app.model.UpdateTreeRequest;
 import com.grupo2.app.persistence.strategy.PersistenceStrategy;
 import com.grupo2.treeengine.domain.Node;
+import com.grupo2.treeengine.exception.NodeNotFoundException;
 import com.grupo2.treeengine.service.TreeService;
 import com.grupo2.app.model.HeightResponse;
 import com.grupo2.app.model.ValidationResponse;
@@ -29,9 +30,9 @@ public class NodeService {
     private final TreeService treeService;
 
     private final NodeApiMapper mapper;
-    
+
     private final TreeViewApiMapper treeViewMapper;
-    
+
     private final PersistenceStrategy persistence;
 
     public NodeService(
@@ -72,7 +73,7 @@ public class NodeService {
 
         Node parent = persistence.findById(parentId)
                 .orElseThrow(() ->
-                        new RuntimeException("Parent not found"));
+                        new NodeNotFoundException("Parent not found: " + parentId));
 
         Node domainNode = mapper.toDomain(request);
 
@@ -88,8 +89,8 @@ public class NodeService {
 
         return mapper.toResponse(savedNode);
     }
-    
- // =====================================================
+
+    // =====================================================
     // GET TREE
     // =====================================================
 
@@ -121,7 +122,7 @@ public class NodeService {
 
         Node node = persistence.findById(nodeId)
                 .orElseThrow(() ->
-                        new RuntimeException("Node not found"));
+                        new NodeNotFoundException("Node not found: " + nodeId));
 
         List<Node> nodes =
                 persistence.findAllByTreeId(
@@ -136,165 +137,165 @@ public class NodeService {
         );
     }
 
- // =====================================================
- // GET DEPTH
- // =====================================================
+    // =====================================================
+    // GET DEPTH
+    // =====================================================
 
- public DepthResponse getDepth(UUID nodeId) {
+    public DepthResponse getDepth(UUID nodeId) {
 
-     Node node = persistence.findById(nodeId)
-             .orElseThrow(() ->
-                     new RuntimeException("Node not found"));
+        Node node = persistence.findById(nodeId)
+                .orElseThrow(() ->
+                        new NodeNotFoundException("Node not found: " + nodeId));
 
-     List<Node> allNodes =
-             persistence.findAllByTreeId(node.getTreeId());
+        List<Node> allNodes =
+                persistence.findAllByTreeId(node.getTreeId());
 
-     int depth = treeService.getDepth(nodeId, allNodes);
+        int depth = treeService.getDepth(nodeId, allNodes);
 
-     DepthResponse response = new DepthResponse();
-     response.setDepth(depth);
+        DepthResponse response = new DepthResponse();
+        response.setDepth(depth);
 
-     return response;
- }
+        return response;
+    }
 
- // =====================================================
- // GET PATH TO ROOT
- // =====================================================
+    // =====================================================
+    // GET PATH TO ROOT
+    // =====================================================
 
- public NodeListResponse getPathToRoot(UUID nodeId) {
+    public NodeListResponse getPathToRoot(UUID nodeId) {
 
-     Node node = persistence.findById(nodeId)
-             .orElseThrow(() ->
-                     new RuntimeException("Node not found"));
+        Node node = persistence.findById(nodeId)
+                .orElseThrow(() ->
+                        new NodeNotFoundException("Node not found: " + nodeId));
 
-     List<Node> allNodes =
-             persistence.findAllByTreeId(node.getTreeId());
+        List<Node> allNodes =
+                persistence.findAllByTreeId(node.getTreeId());
 
-     List<Node> path =
-             treeService.getPathToRoot(nodeId, allNodes);
+        List<Node> path =
+                treeService.getPathToRoot(nodeId, allNodes);
 
-     NodeListResponse response = new NodeListResponse();
+        NodeListResponse response = new NodeListResponse();
 
-     response.setItems(
-             path.stream()
-                     .map(mapper::toResponse)
-                     .toList()
-     );
+        response.setItems(
+                path.stream()
+                        .map(mapper::toResponse)
+                        .toList()
+        );
 
-     return response;
- }
-    
-    
- // =====================================================
- // GET ANCESTORS
- // =====================================================
+        return response;
+    }
 
- public NodeListResponse getAncestors(UUID nodeId) {
+    // =====================================================
+    // GET ANCESTORS
+    // =====================================================
 
-     Node node = persistence.findById(nodeId)
-             .orElseThrow(() ->
-                     new RuntimeException("Node not found"));
+    public NodeListResponse getAncestors(UUID nodeId) {
 
-     List<Node> allNodes =
-             persistence.findAllByTreeId(node.getTreeId());
+        Node node = persistence.findById(nodeId)
+                .orElseThrow(() ->
+                        new NodeNotFoundException("Node not found: " + nodeId));
 
-     List<Node> ancestors =
-             treeService.getAncestors(nodeId, allNodes);
+        List<Node> allNodes =
+                persistence.findAllByTreeId(node.getTreeId());
 
-     NodeListResponse response = new NodeListResponse();
+        List<Node> ancestors =
+                treeService.getAncestors(nodeId, allNodes);
 
-     response.setItems(
-             ancestors.stream()
-                     .map(mapper::toResponse)
-                     .toList()
-     );
+        NodeListResponse response = new NodeListResponse();
 
-     return response;
- }
- 
-//=====================================================
-//GET HEIGHT
-//=====================================================
+        response.setItems(
+                ancestors.stream()
+                        .map(mapper::toResponse)
+                        .toList()
+        );
 
-public HeightResponse getHeight(UUID treeId) {
+        return response;
+    }
 
-  List<Node> allNodes = persistence.findAllByTreeId(treeId);
+    // =====================================================
+    // GET HEIGHT
+    // =====================================================
 
-  int height = treeService.getHeight(allNodes);
+    public HeightResponse getHeight(UUID treeId) {
 
-  HeightResponse response = new HeightResponse();
-  response.setHeight(height);
+        List<Node> allNodes = persistence.findAllByTreeId(treeId);
 
-  return response;
-}
+        int height = treeService.getHeight(allNodes);
 
-//=====================================================
-//VALIDATE NO CYCLES
-//=====================================================
+        HeightResponse response = new HeightResponse();
+        response.setHeight(height);
 
-public ValidationResponse validateNoCycles(UUID treeId) {
+        return response;
+    }
 
-  List<Node> allNodes = persistence.findAllByTreeId(treeId);
+    // =====================================================
+    // VALIDATE NO CYCLES
+    // =====================================================
 
-  boolean valid = treeService.validateNoCycles(allNodes);
+    public ValidationResponse validateNoCycles(UUID treeId) {
 
-  ValidationResponse response = new ValidationResponse();
-  response.setValid(valid);
+        List<Node> allNodes = persistence.findAllByTreeId(treeId);
 
-  return response;
-}
- 
- public NodeListResponse traversal(String type) {
+        boolean valid = treeService.validateNoCycles(allNodes);
 
-	    // ✅ cargar todos los nodos que sí tienen treeId
-	    List<Node> allNodes = persistence.findAll();
+        ValidationResponse response = new ValidationResponse();
+        response.setValid(valid);
 
-	    // ✅ obtener treeIds únicos
-	    List<UUID> treeIds = allNodes.stream()
-	            .map(Node::getTreeId)
-	            .filter(id -> id != null)
-	            .distinct()
-	            .toList();
+        return response;
+    }
 
-	    List<Node> result = new ArrayList<>();
+    // =====================================================
+    // TRAVERSAL
+    // =====================================================
 
-	    for (UUID treeId : treeIds) {
+    public NodeListResponse traversal(String type) {
 
-	        List<Node> treeNodes = allNodes.stream()
-	                .filter(n -> treeId.equals(n.getTreeId()))
-	                .toList();
+        List<Node> allNodes = persistence.findAll();
 
-	        List<Node> traversed = type.equals("DFS")
-	                ? treeService.dfs(treeNodes)
-	                : treeService.bfs(treeNodes);
+        List<UUID> treeIds = allNodes.stream()
+                .map(Node::getTreeId)
+                .filter(id -> id != null)
+                .distinct()
+                .toList();
 
-	        result.addAll(traversed);
-	    }
+        List<Node> result = new ArrayList<>();
 
-	    NodeListResponse response = new NodeListResponse();
-	    response.setItems(
-	            result.stream()
-	                    .map(mapper::toResponse)
-	                    .toList()
-	    );
+        for (UUID treeId : treeIds) {
 
-	    return response;
-	}
- 
-//=====================================================
-//UPDATE TREE
-//=====================================================
+            List<Node> treeNodes = allNodes.stream()
+                    .filter(n -> treeId.equals(n.getTreeId()))
+                    .toList();
 
- public TreeInfoResponse updateTree(UUID treeId, UpdateTreeRequest request) {
+            List<Node> traversed = type.equals("DFS")
+                    ? treeService.dfs(treeNodes)
+                    : treeService.bfs(treeNodes);
 
-	    persistence.updateTree(treeId, request.getComputerName(), request.getManufacturer());
+            result.addAll(traversed);
+        }
 
-	    TreeInfoResponse response = new TreeInfoResponse();
-	    response.setId(treeId);
-	    response.setComputerName(request.getComputerName());
-	    response.setManufacturer(request.getManufacturer());
+        NodeListResponse response = new NodeListResponse();
+        response.setItems(
+                result.stream()
+                        .map(mapper::toResponse)
+                        .toList()
+        );
 
-	    return response;
-	}
-    
+        return response;
+    }
+
+    // =====================================================
+    // UPDATE TREE
+    // =====================================================
+
+    public TreeInfoResponse updateTree(UUID treeId, UpdateTreeRequest request) {
+
+        persistence.updateTree(treeId, request.getComputerName(), request.getManufacturer());
+
+        TreeInfoResponse response = new TreeInfoResponse();
+        response.setId(treeId);
+        response.setComputerName(request.getComputerName());
+        response.setManufacturer(request.getManufacturer());
+
+        return response;
+    }
 }
