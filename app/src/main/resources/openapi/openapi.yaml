@@ -206,6 +206,7 @@ paths:
         - Tree
       operationId: getHeight
       summary: Altura del árbol
+
       parameters:
         - name: treeId
           in: query
@@ -286,6 +287,7 @@ paths:
         - Tree
       operationId: validateNoCycles
       summary: Validar que no existan ciclos
+
       parameters:
         - name: treeId
           in: query
@@ -301,6 +303,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationResponse'
+
+  # =====================================================
+  # UPDATE TREE
+  # =====================================================
+
+  /tree/{treeId}:
+    put:
+      tags:
+        - Tree
+      operationId: updateTree
+      summary: Actualizar datos del árbol
+
+      parameters:
+        - name: treeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTreeRequest'
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreeInfoResponse'
 
 components:
 
@@ -335,6 +371,14 @@ components:
         - value
       properties:
         value:
+          type: string
+
+    UpdateTreeRequest:
+      type: object
+      properties:
+        computerName:
+          type: string
+        manufacturer:
           type: string
 
     # =====================================================
@@ -375,6 +419,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TreeResponse'
+
+    # =====================================================
+    # TREE INFO RESPONSE
+    # =====================================================
+
+    TreeInfoResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        computerName:
+          type: string
+        manufacturer:
+          type: string
 
     # =====================================================
     # TREE LIST RESPONSE

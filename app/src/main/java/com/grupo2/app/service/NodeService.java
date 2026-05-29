@@ -7,7 +7,9 @@ import com.grupo2.app.model.CreateRootRequest;
 import com.grupo2.app.model.DepthResponse;
 import com.grupo2.app.model.NodeListResponse;
 import com.grupo2.app.model.NodeResponse;
+import com.grupo2.app.model.TreeInfoResponse;
 import com.grupo2.app.model.TreeResponse;
+import com.grupo2.app.model.UpdateTreeRequest;
 import com.grupo2.app.persistence.strategy.PersistenceStrategy;
 import com.grupo2.treeengine.domain.Node;
 import com.grupo2.treeengine.service.TreeService;
@@ -275,6 +277,22 @@ public ValidationResponse validateNoCycles(UUID treeId) {
 	                    .map(mapper::toResponse)
 	                    .toList()
 	    );
+
+	    return response;
+	}
+ 
+//=====================================================
+//UPDATE TREE
+//=====================================================
+
+ public TreeInfoResponse updateTree(UUID treeId, UpdateTreeRequest request) {
+
+	    persistence.updateTree(treeId, request.getComputerName(), request.getManufacturer());
+
+	    TreeInfoResponse response = new TreeInfoResponse();
+	    response.setId(treeId);
+	    response.setComputerName(request.getComputerName());
+	    response.setManufacturer(request.getManufacturer());
 
 	    return response;
 	}

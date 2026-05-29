@@ -4,8 +4,10 @@ import com.grupo2.app.api.TreeApi;
 import com.grupo2.app.model.HeightResponse;
 
 import com.grupo2.app.model.NodeListResponse;
+import com.grupo2.app.model.TreeInfoResponse;
 import com.grupo2.app.model.TreeListResponse;
 import com.grupo2.app.model.TreeResponse;
+import com.grupo2.app.model.UpdateTreeRequest;
 import com.grupo2.app.model.ValidationResponse;
 import com.grupo2.app.service.NodeService;
 
@@ -79,6 +81,19 @@ public class TreeController implements TreeApi {
     public ResponseEntity<ValidationResponse> validateNoCycles(UUID treeId) {
         return ResponseEntity.ok(
                 service.validateNoCycles(treeId)
+        );
+    }
+ // =====================================================
+ // UPDATE TREE
+ // =====================================================
+
+    @Override
+    public ResponseEntity<TreeInfoResponse> updateTree(
+            UUID treeId,
+            UpdateTreeRequest request
+    ) {
+        return ResponseEntity.ok(
+                service.updateTree(treeId, request)
         );
     }
 }

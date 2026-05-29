@@ -21,4 +21,8 @@ public interface PersistenceStrategy {
     void delete(UUID id);
 
 	List<Node> findAll();
+	
+	 void updateTree(UUID treeId, String computerName, String manufacturer);
+	
 }
+
