@@ -1,7 +1,8 @@
 # Proyecto Final — Programación 3 — Grupo 2
 
-Backend REST API para gestión de árboles genéricos con estrategias intercambiables de algoritmos y persistencia.
+Backend REST API para gestión de árboles genéricos con estrategias intercambiables de algoritmos y persistencia. Para documentacion especifica y util, mira carpeta /docs, ademas tambien hay diagramas de flujo de como es proyecto, ejecucion del proyecto, interfaces, flujo de GET y POST. Estos diagramas de flujo se encuentra en la carpeta /Diagramas.
 
+LINK TRELLO: [Grupo 2](https://trello.com/b/PIkiqf3t/proyecto-final-progra-3)
 ---
 
 ## Tecnologías
@@ -134,6 +135,66 @@ mvn -pl app spring-boot:run "-Dspring-boot.run.arguments=--spring.config.locatio
 
 ---
 
+## Publicación del Backend mediante Ngrok (Opcional)
+
+Durante el desarrollo se utilizó Ngrok para exponer temporalmente el backend a Internet y permitir la integración con herramientas externas de generación de frontend.
+
+### Requisitos
+
+- Backend ejecutándose localmente.
+- Cuenta de Ngrok.
+- Authtoken configurado.
+
+### Iniciar el backend
+
+```cmd
+mvn -pl app spring-boot:run "-Dspring-boot.run.arguments=--spring.config.location=classpath:/application-postgres.properties --app.tree.strategy=collections"
+```
+
+Verificar que la aplicación responda correctamente:
+
+```text
+http://localhost:8080/health
+```
+
+### Publicar mediante Ngrok
+Donde descargaste ngrok, abre un cmd y pon lo siguiente
+```cmd
+ngrok http 8080
+```
+
+Ngrok generará una URL similar a:
+
+```text
+https://abcd1234.ngrok-free.app
+```
+
+### Verificar acceso remoto
+
+```text
+https://abcd1234.ngrok-free.app/swagger-ui.html
+```
+
+o
+
+```text
+https://abcd1234.ngrok-free.app/actuator/health
+```
+
+### Consideraciones
+
+- El proyecto incluye configuración específica para facilitar la integración mediante Ngrok.
+- Si se utiliza un frontend hospedado en otro dominio, puede ser necesario habilitar la configuración CORS correspondiente, se encuetra en el paquete config.
+- Las URLs generadas por Ngrok son temporales y cambian cada vez que se reinicia el túnel.
+- Ngrok fue utilizado únicamente para pruebas e integración durante el desarrollo.
+
+Para más detalles consultar:
+
+```text
+docs/DESAFIOS_DE_INTEGRACION_Y_DESPLIEGUE.md
+```
+
+---
 ## Manejo de Errores
 
 | Excepción | HTTP | Cuándo |
